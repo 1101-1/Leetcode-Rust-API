@@ -62,7 +62,7 @@ impl Task {
         }
     }
 
-    pub async fn send_subm(&self, lang: &str, typed_code: &str) -> SubmExecutionResult {
+    pub async fn send_subm(&self, lang: &str, typed_code: &str) -> Result<SubmExecutionResult, Box<dyn Error>> {
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
             lang: lang.to_lowercase(),
@@ -70,7 +70,8 @@ impl Task {
         })
         .unwrap();
 
-        let resp = self
+        let resp = 
+        match self
             .client
             .post(format!(
                 "https://leetcode.com/problems/{}/submit/",
@@ -81,8 +82,10 @@ impl Task {
             .await
             .unwrap()
             .json::<SubmissionCaseResp>()
-            .await
-            .unwrap();
+            .await {
+                Ok(data) => data,
+                Err(_err) => return Err("Your token is invalid or access to the task is deny".into())
+            };
 
         loop {
             let status = self
@@ -95,10 +98,9 @@ impl Task {
                 .await
                 .unwrap()
                 .json::<SubmExecutionResult>()
-                .await
-                .unwrap();
+                .await?;
             if status.state == "SUCCESS" {
-                return status;
+                return Ok(status);
             }
             println!("{:?}", status.state);
             tokio::time::sleep(Duration::from_secs(1)).await;
