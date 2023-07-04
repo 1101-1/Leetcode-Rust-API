@@ -5,9 +5,9 @@ use serde_json::json;
 use super::{
     subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
     subm_show::SubmList,
-    taskfulldata::TaskFullData,
+    taskfulldata::{CodeSnippetNode, Solution, TaskFullData, TopicTagNode},
     test_send::{TestCase, TestCaseResp, TestExecutionResult},
-    Rate,
+    Descryption, Rate,
 };
 
 #[derive(Debug)]
@@ -118,40 +118,52 @@ impl Task {
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
-
-    pub async fn descryption(&self) -> Result<String, Box<dyn Error>> {
-        let query = json!({
-            "query": "\n    query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n    mysqlSchemas\n  }\n}\n    ",
-            "variables": {
-                "titleSlug": self.task_search_name
-            },
-            "operationName": "questionContent"
-        });
-
-        let query = serde_json::to_string(&query).unwrap();
-
-        match self
-            .client
-            .post("https://leetcode.com/graphql/")
-            .body(query)
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-        {
-            Ok(data) => Ok(data),
-            Err(_err) => Err("Can't take descryption from task".into()),
-        }
+    pub fn code_snippets(&self) -> Option<Vec<CodeSnippetNode>> {
+        self.full_data.data.question.codeSnippets.clone()
     }
 
-    pub async fn likes(&self) -> Rate {
+    pub fn solution_info(&self) -> Option<Solution> {
+        self.full_data.data.question.solution.clone()
+    }
+
+    pub fn topic_tags(&self) -> Vec<TopicTagNode> {
+        self.full_data.data.question.topicTags.clone()
+    }
+
+    pub fn simolar_questions(&self) -> String {
+        self.full_data.data.question.similarQuestions.clone()
+    }
+    pub fn stats(&self) -> String {
+        self.full_data.data.question.stats.clone()
+    }
+
+    pub fn hints(&self) -> Vec<String> {
+        self.full_data.data.question.hints.clone()
+    }
+
+    pub fn descryption(&self) -> Descryption {
+        let descryption = json!({
+            "name": self.full_data.data.question.title,
+            "content": self.full_data.data.question.content
+        });
+        serde_json::from_value::<Descryption>(descryption).unwrap()
+    }
+
+    pub fn difficulty(&self) -> String {
+        self.full_data.data.question.difficulty.clone()
+    }
+
+    pub fn likes(&self) -> Rate {
         let rate = json!({
             "likes": self.full_data.data.question.likes,
             "dislikes": self.full_data.data.question.dislikes
         });
 
         serde_json::from_value::<Rate>(rate).unwrap()
+    }
+
+    pub fn category(&self) -> String {
+        self.full_data.data.question.categoryTitle.clone()
     }
 
     pub async fn submissions(&self) -> Result<SubmList, Box<dyn Error>> {

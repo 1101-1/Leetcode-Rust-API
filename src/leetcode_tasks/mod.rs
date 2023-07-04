@@ -13,3 +13,10 @@ pub(crate) struct Rate {
     pub likes: u32,
     pub dislikes: u32,
 }
+
+#[allow(unused)]
+#[derive(Deserialize, Debug)]
+pub(crate) struct Descryption {
+    pub name: String,
+    pub content: String,
+}

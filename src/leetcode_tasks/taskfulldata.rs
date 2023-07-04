@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[allow(non_snake_case)]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct TopicTagNode {
     pub name: String,
     pub slug: String,
@@ -9,7 +9,7 @@ pub struct TopicTagNode {
 }
 
 #[allow(non_snake_case)]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CodeSnippetNode {
     pub lang: String,
     pub langSlug: String,
@@ -17,7 +17,7 @@ pub struct CodeSnippetNode {
 }
 
 #[allow(non_snake_case)]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Solution {
     pub id: String,
     pub canSeeDetail: bool,
@@ -27,7 +27,7 @@ pub struct Solution {
 }
 
 #[allow(non_snake_case)]
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Question {
     pub questionId: String,
     pub questionFrontendId: String,
