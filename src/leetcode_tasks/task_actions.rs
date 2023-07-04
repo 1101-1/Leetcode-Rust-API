@@ -3,9 +3,11 @@ use std::{error::Error, time::Duration};
 use serde_json::json;
 
 use super::{
-    subm::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
+    subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
+    subm_show::SubmList,
     taskfulldata::TaskFullData,
-    test::{TestCase, TestCaseResp, TestExecutionResult},
+    test_send::{TestCase, TestCaseResp, TestExecutionResult},
+    Rate,
 };
 
 #[derive(Debug)]
@@ -143,16 +145,41 @@ impl Task {
         }
     }
 
-    pub async fn likes(&self) -> String {
-        json!({
+    pub async fn likes(&self) -> Rate {
+        let rate = json!({
             "likes": self.full_data.data.question.likes,
             "dislikes": self.full_data.data.question.dislikes
-        }).to_string()
+        });
+
+        serde_json::from_value::<Rate>(rate).unwrap()
     }
 
-    pub async fn submissions(&self) {
-        todo!()
+    pub async fn submissions(&self) -> Result<SubmList, Box<dyn Error>> {
+        let query = json!({
+            "operationName": "Submissions",
+            "variables": {
+                "offset": 0,
+                "limit": 20,
+                "lastKey": null,
+                "questionSlug": self.task_search_name
+            },
+            "query": "query Submissions($offset: Int!, $limit: Int!, $lastKey: String, $questionSlug: String!) {\n  submissionList(offset: $offset, limit: $limit, lastKey: $lastKey, questionSlug: $questionSlug) {\n    lastKey\n    hasNext\n    submissions {\n      id\n      statusDisplay\n      lang\n      runtime\n      timestamp\n      url\n      isPending\n      memory\n      __typename\n    }\n    __typename\n  }\n}\n"
+        });
+
+        let query = serde_json::to_string(&query).unwrap();
+
+        match self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await
+            .unwrap()
+            .json::<SubmList>()
+            .await
+        {
+            Ok(data) => Ok(data),
+            Err(_err) => Err("Can't take descryption from task".into()),
+        }
     }
-
-
 }

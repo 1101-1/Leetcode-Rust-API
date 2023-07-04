@@ -3,7 +3,7 @@ use std::error::Error;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
 
-use crate::leetcode_tasks::{task_actions::Task, task_descr::TaskData, taskfulldata::TaskFullData};
+use crate::leetcode_tasks::{descr::TaskData, task_actions::Task, taskfulldata::TaskFullData};
 
 pub(crate) struct UserApi {
     client: reqwest::Client,
