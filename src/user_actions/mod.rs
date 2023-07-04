@@ -24,10 +24,7 @@ impl UserApi {
         headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
         headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
         headers.insert("Origin", HeaderValue::from_static("https://leetcode.com"));
-        headers.insert(
-            "Referer",
-            HeaderValue::from_static("https://leetcode.com/"),
-        );
+        headers.insert("Referer", HeaderValue::from_static("https://leetcode.com/"));
         headers.insert("content-type", HeaderValue::from_static("application/json"));
         headers.insert("Connection", HeaderValue::from_static("keep-alive"));
         headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
@@ -56,7 +53,10 @@ impl UserApi {
         })
     }
 
-    async fn get_full_data(&self, task_name: String) -> Result<(String, TaskFullData), Box<dyn Error>>{
+    async fn get_full_data(
+        &self,
+        task_name: String,
+    ) -> Result<(String, TaskFullData), Box<dyn Error>> {
         let json_obj = json!({
             "operationName": "questionData",
             "variables": {
@@ -67,8 +67,7 @@ impl UserApi {
 
         let query = serde_json::to_string(&json_obj).unwrap();
 
-        let full_data = 
-        match self
+        let full_data = match self
             .client
             .post("https://leetcode.com/graphql/")
             .body(query)
@@ -76,10 +75,11 @@ impl UserApi {
             .await
             .unwrap()
             .json::<TaskFullData>()
-            .await {
-                Ok(data) => data,
-                Err(_err) => return Err("Can't take task data".into()) 
-            };
+            .await
+        {
+            Ok(data) => data,
+            Err(_err) => return Err("Can't take task data".into()),
+        };
 
         Ok((full_data.data.question.titleSlug.clone(), full_data))
     }

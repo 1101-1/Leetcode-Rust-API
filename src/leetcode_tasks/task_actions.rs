@@ -1,11 +1,11 @@
-use std::{time::Duration, error::Error};
+use std::{error::Error, time::Duration};
 
 use serde_json::json;
 
-
 use super::{
     subm::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
-    test::{TestCase, TestCaseResp, TestExecutionResult}, taskfulldata::TaskFullData,
+    taskfulldata::TaskFullData,
+    test::{TestCase, TestCaseResp, TestExecutionResult},
 };
 
 #[derive(Debug)]
@@ -17,7 +17,11 @@ pub(crate) struct Task {
 
 #[allow(unused)]
 impl Task {
-    pub async fn send_test(&self, lang: &str, typed_code: &str) -> TestExecutionResult {
+    pub async fn send_test(
+        &self,
+        lang: &str,
+        typed_code: &str,
+    ) -> Result<TestExecutionResult, Box<dyn Error>> {
         let json_data = serde_json::to_string(&TestCase {
             question_id: self.full_data.data.question.questionId.clone(),
             data_input: self.full_data.data.question.sampleTestCase.clone(),
@@ -27,7 +31,7 @@ impl Task {
         })
         .unwrap();
 
-        let resp = self
+        let resp = match self
             .client
             .post(format!(
                 "https://leetcode.com/problems/{}/interpret_solution/",
@@ -39,7 +43,10 @@ impl Task {
             .unwrap()
             .json::<TestCaseResp>()
             .await
-            .unwrap();
+        {
+            Ok(data) => data,
+            Err(_err) => return Err("Your token is invalid or access to the Task is deny".into()),
+        };
 
         loop {
             let status = self
@@ -52,26 +59,28 @@ impl Task {
                 .await
                 .unwrap()
                 .json::<TestExecutionResult>()
-                .await
-                .unwrap();
+                .await?;
             if status.state == "SUCCESS" {
-                return status;
+                return Ok(status);
             }
             println!("{:?}", status.state);
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
 
-    pub async fn send_subm(&self, lang: &str, typed_code: &str) -> Result<SubmExecutionResult, Box<dyn Error>> {
+    pub async fn send_subm(
+        &self,
+        lang: &str,
+        code: &str,
+    ) -> Result<SubmExecutionResult, Box<dyn Error>> {
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
             lang: lang.to_lowercase(),
-            typed_code: String::from(typed_code),
+            typed_code: String::from(code),
         })
         .unwrap();
 
-        let resp = 
-        match self
+        let resp = match self
             .client
             .post(format!(
                 "https://leetcode.com/problems/{}/submit/",
@@ -82,10 +91,11 @@ impl Task {
             .await
             .unwrap()
             .json::<SubmissionCaseResp>()
-            .await {
-                Ok(data) => data,
-                Err(_err) => return Err("Your token is invalid or access to the task is deny".into())
-            };
+            .await
+        {
+            Ok(data) => data,
+            Err(_err) => return Err("Your token is invalid or access to the task is deny".into()),
+        };
 
         loop {
             let status = self
@@ -118,17 +128,31 @@ impl Task {
 
         let query = serde_json::to_string(&query).unwrap();
 
-        match self.client
+        match self
+            .client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await
             .unwrap()
             .text()
-            .await {
-                Ok(data) => Ok(data),
-                Err(_err) => Err("Can't take descryption from task".into())
-            }
-            
+            .await
+        {
+            Ok(data) => Ok(data),
+            Err(_err) => Err("Can't take descryption from task".into()),
+        }
     }
+
+    pub async fn likes(&self) -> String {
+        json!({
+            "likes": self.full_data.data.question.likes,
+            "dislikes": self.full_data.data.question.dislikes
+        }).to_string()
+    }
+
+    pub async fn submissions(&self) {
+        todo!()
+    }
+
+
 }
