@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, error::Error};
 
 use serde_json::json;
 
@@ -105,7 +105,7 @@ impl Task {
         }
     }
 
-    pub async fn find_info(&self) -> String {
+    pub async fn descryption(&self) -> Result<String, Box<dyn Error>> {
         let query = json!({
             "query": "\n    query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n    mysqlSchemas\n  }\n}\n    ",
             "variables": {
@@ -116,14 +116,17 @@ impl Task {
 
         let query = serde_json::to_string(&query).unwrap();
 
-        self.client
+        match self.client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await
             .unwrap()
             .text()
-            .await
-            .unwrap()
+            .await {
+                Ok(data) => Ok(data),
+                Err(_err) => Err("Can't take descryption from task".into())
+            }
+            
     }
 }

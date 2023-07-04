@@ -1,7 +1,9 @@
+use std::error::Error;
+
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
 
-use crate::leetcode_tasks::{task_info::Task, taskdata::TaskData, taskfulldata::TaskFullData};
+use crate::leetcode_tasks::{task_info::Task, task_descr::TaskData, taskfulldata::TaskFullData};
 
 pub(crate) struct UserApi {
     client: reqwest::Client,
@@ -40,20 +42,21 @@ impl UserApi {
         Self { client }
     }
 
-    pub async fn set_task(&self, task: &str) -> Task {
+    pub async fn set_task(&self, task: &str) -> Result<Task, Box<dyn Error>> {
         let info = Self::get_full_data(
             &self,
-            Self::get_question_name(&self, String::from(task)).await,
+            Self::get_question_name(&self, String::from(task)).await?,
         )
-        .await;
-        Task {
+        .await?;
+
+        Ok(Task {
             client: self.client.clone(),
             task_search_name: info.0,
             full_data: info.1,
-        }
+        })
     }
 
-    async fn get_full_data(&self, task_name: String) -> (String, TaskFullData) {
+    async fn get_full_data(&self, task_name: String) -> Result<(String, TaskFullData), Box<dyn Error>>{
         let json_obj = json!({
             "operationName": "questionData",
             "variables": {
@@ -64,7 +67,8 @@ impl UserApi {
 
         let query = serde_json::to_string(&json_obj).unwrap();
 
-        let full_data = self
+        let full_data = 
+        match self
             .client
             .post("https://leetcode.com/graphql/")
             .body(query)
@@ -72,12 +76,15 @@ impl UserApi {
             .await
             .unwrap()
             .json::<TaskFullData>()
-            .await
-            .unwrap();
-        (full_data.data.question.titleSlug.clone(), full_data)
+            .await {
+                Ok(data) => data,
+                Err(_err) => return Err("Can't take task data".into()) 
+            };
+
+        Ok((full_data.data.question.titleSlug.clone(), full_data))
     }
 
-    async fn get_question_name(&self, name: String) -> String {
+    async fn get_question_name(&self, name: String) -> Result<String, Box<dyn Error>> {
         let query = json!({
             "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { total: totalNum questions: data { acRate difficulty freqBar frontendQuestionId: questionFrontendId isFavor paidOnly: isPaidOnly status title titleSlug topicTags { name id slug } hasSolution hasVideoSolution } } }",
             "variables": {
@@ -101,13 +108,16 @@ impl UserApi {
             .await
             .unwrap()
             .text()
-            .await
-            .unwrap();
+            .await;
 
-        let parsed_data: TaskData = serde_json::from_str(&task_info).unwrap();
+        if let Err(_err) = task_info {
+            return Err("Task does not found".into());
+        }
 
-        parsed_data.data.problemsetQuestionList.questions[0]
+        let parsed_data: TaskData = serde_json::from_str(&task_info.unwrap())?;
+
+        Ok(parsed_data.data.problemsetQuestionList.questions[0]
             .titleSlug
-            .clone()
+            .clone())
     }
 }
