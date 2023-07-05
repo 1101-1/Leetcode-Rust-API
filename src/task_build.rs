@@ -3,7 +3,7 @@ use std::error::Error;
 use serde::Deserialize;
 use serde_json::json;
 
-use super::{descr::TaskData, Category, Difficulty, Status, Tags};
+use crate::{source::descr::TaskData, query_enums::{Category, Difficulty, Status, Tags}};
 
 #[derive(Debug)]
 pub struct TaskBuilder {
@@ -68,7 +68,7 @@ impl TaskBuilder {
         self
     }
 
-    pub fn set_note_limits(mut self, limit: u32) -> TaskBuilder {
+    pub fn set_note_limit(mut self, limit: u32) -> TaskBuilder {
         self.limit = limit;
         self
     }
@@ -245,3 +245,5 @@ impl TaskBuilder {
         Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
     }
 }
+
+

@@ -2,13 +2,15 @@ use std::error::Error;
 
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
+use source::{taskfulldata::TaskFullData, descr::TaskData};
+use task_actions::Task;
+use task_build::{TaskBuilder, Filters};
 
-use crate::leetcode_tasks::{
-    descr::TaskData,
-    task_actions::Task,
-    task_build::{Filters, TaskBuilder},
-    taskfulldata::TaskFullData,
-};
+mod source;
+mod task_actions;
+mod task_build;
+mod query_enums;
+
 
 pub(crate) struct UserApi {
     client: reqwest::Client,
@@ -127,7 +129,7 @@ impl UserApi {
         Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
     }
 
-    pub async fn show_task_builder(&self) -> TaskBuilder {
+    pub fn show_task_builder(&self) -> TaskBuilder {
         TaskBuilder {
             client: self.client.clone(),
             key_word: String::new(),

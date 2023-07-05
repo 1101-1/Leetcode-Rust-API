@@ -1,27 +1,3 @@
-pub mod descr;
-pub mod subm_send;
-pub mod subm_show;
-pub mod task_actions;
-pub mod task_build;
-pub mod taskfulldata;
-pub mod test_send;
-
-use serde::{Deserialize, Serialize};
-
-#[allow(unused)]
-#[derive(Deserialize, Debug)]
-pub(crate) struct Rate {
-    pub likes: u32,
-    pub dislikes: u32,
-}
-
-#[allow(unused)]
-#[derive(Deserialize, Debug)]
-pub(crate) struct Descryption {
-    pub name: String,
-    pub content: String,
-}
-
 #[allow(unused)]
 pub enum Category {
     AllTopics,
@@ -45,8 +21,8 @@ pub enum Status {
     Solved,
     Attempted,
 }
-
-#[derive(Serialize, Debug, Deserialize)]
+#[allow(unused)]
+#[derive(Debug)]
 pub enum Tags {
     Array,
     String,
