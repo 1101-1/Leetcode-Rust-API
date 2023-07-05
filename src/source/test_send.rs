@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
-pub(crate) struct TestCase {
+pub struct TestCase {
     pub question_id: String,
     pub data_input: String,
     pub lang: String,
@@ -11,14 +11,14 @@ pub(crate) struct TestCase {
 
 #[allow(unused)]
 #[derive(Deserialize, Debug)]
-pub(crate) struct TestCaseResp {
+pub struct TestCaseResp {
     pub interpret_id: String,
     pub test_case: String,
 }
 
 #[allow(unused)]
 #[derive(Deserialize, Debug)]
-pub(crate) struct TestExecutionResult {
+pub struct TestExecutionResult {
     pub status_code: Option<u32>,
     pub lang: Option<String>,
     pub run_success: Option<bool>,

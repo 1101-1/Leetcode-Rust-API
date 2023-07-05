@@ -2,17 +2,15 @@ use std::error::Error;
 
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
-use source::{taskfulldata::TaskFullData, descr::TaskData};
+use source::{descr::TaskData, taskfulldata::TaskFullData};
 use task_actions::Task;
-use task_build::{TaskBuilder, Filters};
+use task_build::{Filters, TaskBuilder};
 
-mod source;
-mod task_actions;
-mod task_build;
-mod query_enums;
+pub mod source;
+pub mod task_actions;
+pub mod task_build;
 
-
-pub(crate) struct UserApi {
+pub struct UserApi {
     client: reqwest::Client,
 }
 
@@ -92,7 +90,7 @@ impl UserApi {
         Ok((full_data.data.question.titleSlug.clone(), full_data))
     }
 
-    pub async fn show_task_list(
+    pub async fn show_tasks_list(
         &self,
         key_word: &str,
         limit: u32,
@@ -175,4 +173,103 @@ impl UserApi {
             .titleSlug
             .clone())
     }
+}
+
+#[allow(unused)]
+pub enum Category {
+    AllTopics,
+    Algorithms,
+    DataBase,
+    JavaScript,
+    Shell,
+    Concurrency,
+}
+
+#[allow(unused)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+}
+
+#[allow(unused)]
+pub enum Status {
+    Todo,
+    Solved,
+    Attempted,
+}
+#[allow(unused)]
+#[derive(Debug)]
+pub enum Tags {
+    Array,
+    String,
+    HashTable,
+    Math,
+    DynamicProgramming,
+    Sorting,
+    Greedy,
+    DepthFirstSearch,
+    Database,
+    BinarySearch,
+    BreadthFirstSearch,
+    Tree,
+    Matrix,
+    TwoPointers,
+    BinaryTree,
+    BitManipulation,
+    HeapPriorityQueue,
+    Stack,
+    Graph,
+    PrefixSum,
+    Simulation,
+    Design,
+    Counting,
+    Backtracking,
+    SlidingWindow,
+    UnionFind,
+    LinkedList,
+    OrderedSet,
+    MonotonicStack,
+    Enumeration,
+    Recursion,
+    Trie,
+    DivideAndConquer,
+    Bitmask,
+    BinarySearchTree,
+    NumberTheory,
+    Queue,
+    SegmentTree,
+    Memoization,
+    Geometry,
+    TopologicalSort,
+    BinaryIndexedTree,
+    HashFunction,
+    GameTheory,
+    ShortestPath,
+    Combinatorics,
+    DataStream,
+    Interactive,
+    StringMatching,
+    RollingHash,
+    Brainteaser,
+    Randomized,
+    MonotonicQueue,
+    MergeSort,
+    Iterator,
+    Concurrency,
+    DoublyLinkedList,
+    ProbabilityStatistics,
+    Quickselect,
+    BucketSort,
+    SuffixArray,
+    MinimumSpanningTree,
+    CountingSort,
+    Shell,
+    LineSweep,
+    ReservoirSampling,
+    EulerianCircuit,
+    RadixSort,
+    StronglyConnectedComponent,
+    RejectionSampling,
+    BiconnectedComponent,
 }

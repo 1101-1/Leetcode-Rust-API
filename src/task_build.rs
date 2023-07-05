@@ -3,7 +3,7 @@ use std::error::Error;
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::{source::descr::TaskData, query_enums::{Category, Difficulty, Status, Tags}};
+use crate::{source::descr::TaskData, Category, Difficulty, Status, Tags};
 
 #[derive(Debug)]
 pub struct TaskBuilder {
@@ -245,5 +245,3 @@ impl TaskBuilder {
         Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
     }
 }
-
-

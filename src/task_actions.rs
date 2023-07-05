@@ -2,10 +2,16 @@ use std::{error::Error, time::Duration};
 
 use serde_json::json;
 
-use crate::source::{taskfulldata::{TaskFullData, CodeSnippetNode, Solution, TopicTagNode}, test_send::{TestExecutionResult, TestCase, TestCaseResp}, subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp}, Descryption, Rate, subm_show::SubmList};
+use crate::source::{
+    subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
+    subm_show::SubmList,
+    taskfulldata::{CodeSnippetNode, Solution, TaskFullData, TopicTagNode},
+    test_send::{TestCase, TestCaseResp, TestExecutionResult},
+    Descryption, Rate,
+};
 
 #[derive(Debug)]
-pub(crate) struct Task {
+pub struct Task {
     pub client: reqwest::Client,
     pub task_search_name: String,
     pub full_data: TaskFullData,
@@ -133,7 +139,7 @@ impl Task {
         self.full_data.data.question.hints.clone()
     }
 
-    pub fn descryption(&self) -> Descryption {
+    pub fn description(&self) -> Descryption {
         let descryption = json!({
             "name": self.full_data.data.question.title,
             "content": self.full_data.data.question.content

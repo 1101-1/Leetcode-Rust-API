@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
-pub(crate) struct SubmissionCaseResp {
+pub struct SubmissionCaseResp {
     pub submission_id: u32,
 }
 
 #[derive(Serialize, Debug)]
-pub(crate) struct SubmissionCase {
+pub struct SubmissionCase {
     pub question_id: String,
     pub lang: String,
     pub typed_code: String,
@@ -14,7 +14,7 @@ pub(crate) struct SubmissionCase {
 
 #[allow(unused)]
 #[derive(Deserialize, Debug)]
-pub(crate) struct SubmExecutionResult {
+pub struct SubmExecutionResult {
     pub status_code: Option<u32>,
     pub lang: Option<String>,
     pub run_success: Option<bool>,
