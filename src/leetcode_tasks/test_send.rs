@@ -9,7 +9,8 @@ pub(crate) struct TestCase {
     pub judge_type: String,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[allow(unused)]
+#[derive(Deserialize, Debug)]
 pub(crate) struct TestCaseResp {
     pub interpret_id: String,
     pub test_case: String,

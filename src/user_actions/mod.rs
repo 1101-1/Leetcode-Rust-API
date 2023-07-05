@@ -3,12 +3,18 @@ use std::error::Error;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::json;
 
-use crate::leetcode_tasks::{descr::TaskData, task_actions::Task, taskfulldata::TaskFullData};
+use crate::leetcode_tasks::{
+    descr::TaskData,
+    task_actions::Task,
+    task_build::{Filters, TaskBuilder},
+    taskfulldata::TaskFullData,
+};
 
 pub(crate) struct UserApi {
     client: reqwest::Client,
 }
 
+#[allow(unused)]
 impl UserApi {
     pub fn new(cookie: &str) -> Self {
         let mut headers = HeaderMap::new();
@@ -82,6 +88,53 @@ impl UserApi {
         };
 
         Ok((full_data.data.question.titleSlug.clone(), full_data))
+    }
+
+    pub async fn show_task_list(
+        &self,
+        key_word: &str,
+        limit: u32,
+    ) -> Result<TaskData, Box<dyn Error>> {
+        let query = json!({
+            "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { total: totalNum questions: data { acRate difficulty freqBar frontendQuestionId: questionFrontendId isFavor paidOnly: isPaidOnly status title titleSlug topicTags { name id slug } hasSolution hasVideoSolution } } }",
+            "variables": {
+                "categorySlug": "",
+                "skip": 0,
+                "limit": limit,
+                "filters": {
+                    "searchKeywords": String::from(key_word)
+                }
+            },
+            "operationName": "problemsetQuestionList"
+        });
+
+        let query = serde_json::to_string(&query).unwrap();
+
+        let task_info = self
+            .client
+            .get("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await;
+
+        if let Err(_err) = task_info {
+            return Err("Task does not found".into());
+        }
+
+        Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
+    }
+
+    pub async fn show_task_builder(&self) -> TaskBuilder {
+        TaskBuilder {
+            client: self.client.clone(),
+            key_word: String::new(),
+            limit: 5,
+            category: String::new(),
+            filters: Filters::default(),
+        }
     }
 
     async fn get_question_name(&self, name: String) -> Result<String, Box<dyn Error>> {

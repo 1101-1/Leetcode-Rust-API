@@ -65,7 +65,6 @@ impl Task {
             if status.state == "SUCCESS" {
                 return Ok(status);
             }
-            println!("{:?}", status.state);
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
@@ -114,7 +113,6 @@ impl Task {
             if status.state == "SUCCESS" {
                 return Ok(status);
             }
-            println!("{:?}", status.state);
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
@@ -126,11 +124,11 @@ impl Task {
         self.full_data.data.question.solution.clone()
     }
 
-    pub fn topic_tags(&self) -> Vec<TopicTagNode> {
+    pub fn related_topics(&self) -> Vec<TopicTagNode> {
         self.full_data.data.question.topicTags.clone()
     }
 
-    pub fn simolar_questions(&self) -> String {
+    pub fn similar_questions(&self) -> String {
         self.full_data.data.question.similarQuestions.clone()
     }
     pub fn stats(&self) -> String {
