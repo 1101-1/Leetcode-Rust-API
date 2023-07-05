@@ -10,6 +10,7 @@ description = """
 A full-features Rust API for Leetcode.
 """
 
+readme = "README.md"
 categories = ["http-client"]
 keywords = ["leetcode", "api"]
 
