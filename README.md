@@ -99,7 +99,9 @@ Replace `"COOKIE"` with your actual LeetCode authentication cookie.
 
 For example format in `.env` file:
 
+```env
 COOKIE="csrftoken=gN3mmFEKoBFHLZuiHEvZYupqirq7brDmi845GhUK8xBa9u3SUVkgTPFTPsLFuAzR; _ga_CDRWKZTDEX=GS1.1.1688568040.1.1.1688568081.19.0.0; _ga=GA1.1.2048740381.1688568040; _dd_s=rum=0&expire=1688568980299; NEW_PROBLEMLIST_PAGE=1"
+```
 
 ### License
 This library is licensed under the `MIT License`.

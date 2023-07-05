@@ -1,14 +1,28 @@
 [package]
 name = "leetcoderustapi"
 version = "0.1.0"
+authors = ["Kirill Melkozerov <k.melkozerov@gmail.com>"]
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/1101-1/LeetcodeRustAPI"
+
+description = """
+A full-features Rust API for Leetcode.
+"""
+
+categories = ["http-client"]
+keywords = ["leetcode", "api"]
 
 [lib]
 name = "leetcoderustapi"
 path = "src/lib.rs"
 
+[[bin]]
+name = "test"
+path = "src/main.rs"
+
 [dependencies]
 reqwest = { version = "0.11.18", features = ["json"] }
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.99"
-tokio = { version = "1.29.1", features = ["full"] }
+tokio = { version = "1.29.1", features = ["time", "full"] }
