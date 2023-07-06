@@ -94,6 +94,11 @@ async fn main() {
         .unwrap();
 }
 ```
+### That is what is it looks like:
+
+![work](https://github.com/1101-1/LeetcodeRustAPI/assets/70093559/70806622-526f-4307-b3b6-c25335ed4421)
+
+
 #### Important
 Replace `"COOKIE"` with your actual LeetCode authentication cookie.
 
