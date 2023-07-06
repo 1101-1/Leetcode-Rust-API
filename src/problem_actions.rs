@@ -3,7 +3,9 @@ use std::{error::Error, time::Duration};
 use serde_json::json;
 
 use crate::resources::{
-    problemfulldata::{CodeSnippetNode, ProblemFullData, Solution, TopicTagNode, Statistics, SimilarQuestions},
+    problemfulldata::{
+        CodeSnippetNode, ProblemFullData, SimilarQuestions, Solution, Statistics, TopicTagNode,
+    },
     subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
     subm_show::SubmList,
     test_send::{TestCase, TestCaseResp, TestExecutionResult},
@@ -125,7 +127,10 @@ impl Problem {
     }
 
     pub fn similar_questions(&self) -> Vec<SimilarQuestions> {
-        serde_json::from_str::<Vec<SimilarQuestions>>(self.full_data.data.question.similarQuestions.as_str()).unwrap()
+        serde_json::from_str::<Vec<SimilarQuestions>>(
+            self.full_data.data.question.similarQuestions.as_str(),
+        )
+        .unwrap()
     }
     pub fn stats(&self) -> Statistics {
         serde_json::from_str::<Statistics>(self.full_data.data.question.stats.as_str()).unwrap()

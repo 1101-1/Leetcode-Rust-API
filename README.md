@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcoderustapi = "0.1.4"
+leetcoderustapi = "0.1.5"
 ```
 ## Usage
 ### Authentication

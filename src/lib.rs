@@ -1,11 +1,11 @@
-use std::error::Error;
-
+use error::Errors;
 use problem_actions::Problem;
 use problem_build::{Filters, TaskBuilder};
 use reqwest::header::{HeaderMap, HeaderValue};
-use serde_json::{json, Value};
 use resources::{cookie::CookieData, descr::ProblemData, problemfulldata::ProblemFullData};
+use serde_json::{json, Value};
 
+pub mod error;
 pub mod problem_actions;
 pub mod problem_build;
 pub mod resources;
@@ -16,7 +16,7 @@ pub struct UserApi {
 
 #[allow(unused)]
 impl UserApi {
-    pub async fn new(cookie: &str) -> Result<Self, Box<dyn Error>> {
+    pub async fn new(cookie: &str) -> Result<Self, Errors> {
         let mut headers = HeaderMap::new();
 
         headers.insert("Host", HeaderValue::from_static("leetcode.com"));
@@ -34,7 +34,9 @@ impl UserApi {
         let cookie = if valid_data.0 {
             cookie
         } else {
-            return Err("Cookie is invalid or User not signed".into());
+            return Err(error::Errors::ApiError(
+                "Cookie is invalid or User not signed".into(),
+            ));
         };
 
         let token = valid_data.1;
@@ -49,17 +51,14 @@ impl UserApi {
         Ok(Self { client })
     }
 
-    async fn valid_check(
-        mut headers: HeaderMap,
-        cookie: &str,
-    ) -> Result<(bool, String), Box<dyn Error>> {
+    async fn valid_check(mut headers: HeaderMap, cookie: &str) -> Result<(bool, String), Errors> {
         let token = if let Some(cookie) = cookie
             .strip_prefix("csrftoken=")
             .and_then(|val| Some(&val[..64]))
         {
             cookie
         } else {
-            return Err("cannot take token from cookie".into());
+            return Err(Errors::ApiError("Cannot take token from cookie".into()));
         };
         headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
         headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
@@ -85,18 +84,14 @@ impl UserApi {
 
         let client = reqwest::Client::new();
 
-        let cookie_info = match client
+        let cookie_info = client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .headers(headers)
             .send()
             .await?
             .text()
-            .await
-        {
-            Ok(data) => data,
-            Err(_err) => return Err("Can't take cookie info".into()),
-        };
+            .await?;
 
         if serde_json::from_str::<CookieData>(&cookie_info)?
             .data
@@ -109,7 +104,7 @@ impl UserApi {
         Ok((false, String::from(token)))
     }
 
-    pub async fn set_problem(&self, task: &str) -> Result<Problem, Box<dyn Error>> {
+    pub async fn set_problem(&self, task: &str) -> Result<Problem, Errors> {
         let info = Self::fetch_full_data(
             &self,
             Self::get_question_name(&self, String::from(task)).await?,
@@ -126,7 +121,7 @@ impl UserApi {
     async fn fetch_full_data(
         &self,
         task_name: String,
-    ) -> Result<(String, ProblemFullData), Box<dyn Error>> {
+    ) -> Result<(String, ProblemFullData), Errors> {
         let json_obj = json!({
             "operationName": "questionData",
             "variables": {
@@ -137,18 +132,14 @@ impl UserApi {
 
         let query = serde_json::to_string(&json_obj)?;
 
-        let full_data = match self
+        let full_data = self
             .client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await?
             .json::<ProblemFullData>()
-            .await
-        {
-            Ok(data) => data,
-            Err(_err) => return Err("Can't take task data".into()),
-        };
+            .await?;
 
         Ok((full_data.data.question.titleSlug.clone(), full_data))
     }
@@ -157,7 +148,7 @@ impl UserApi {
         &self,
         key_word: &str,
         limit: u32,
-    ) -> Result<ProblemData, Box<dyn Error>> {
+    ) -> Result<ProblemData, Errors> {
         let query = json!({
             "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { total: totalNum questions: data { acRate difficulty freqBar frontendQuestionId: questionFrontendId isFavor paidOnly: isPaidOnly status title titleSlug topicTags { name id slug } hasSolution hasVideoSolution } } }",
             "variables": {
@@ -180,13 +171,9 @@ impl UserApi {
             .send()
             .await?
             .text()
-            .await;
+            .await?;
 
-        if let Err(_err) = task_info {
-            return Err("Problem does not found".into());
-        }
-
-        Ok(serde_json::from_str::<ProblemData>(&task_info.unwrap())?)
+        Ok(serde_json::from_str::<ProblemData>(&task_info)?)
     }
 
     pub fn problem_builder(&self) -> TaskBuilder {
@@ -199,7 +186,7 @@ impl UserApi {
         }
     }
 
-    async fn get_question_name(&self, name: String) -> Result<String, Box<dyn Error>> {
+    async fn get_question_name(&self, name: String) -> Result<String, Errors> {
         let query = json!({
             "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { questions: data { titleSlug } } }",
             "variables": {
@@ -222,13 +209,9 @@ impl UserApi {
             .send()
             .await?
             .text()
-            .await;
+            .await?;
 
-        if let Err(_err) = task_info {
-            return Err("Task does not found".into());
-        }
-
-        let parsed_data: ProblemData = serde_json::from_str(&task_info.unwrap())?;
+        let parsed_data: ProblemData = serde_json::from_str(&task_info)?;
 
         Ok(parsed_data.data.problemsetQuestionList.questions[0]
             .titleSlug
