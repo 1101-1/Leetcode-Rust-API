@@ -3,7 +3,7 @@ use std::error::Error;
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::{source::descr::TaskData, Category, Difficulty, Status, Tags};
+use crate::{resources::descr::ProblemData, Category, Difficulty, Status, Tags};
 
 #[derive(Debug)]
 pub struct TaskBuilder {
@@ -164,7 +164,7 @@ impl TaskBuilder {
         self
     }
 
-    pub async fn build(self) -> Result<TaskData, Box<dyn Error>> {
+    pub async fn build(self) -> Result<ProblemData, Box<dyn Error>> {
         let mut filters = json!({
             "orderBy": self.filters.orderBy,
             "sortOrder": self.filters.sortOrder,
@@ -242,6 +242,6 @@ impl TaskBuilder {
             return Err("Task does not found or Incorrect query".into());
         }
 
-        Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
+        Ok(serde_json::from_str::<ProblemData>(&task_info.unwrap())?)
     }
 }

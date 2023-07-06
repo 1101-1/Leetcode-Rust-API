@@ -1,8 +1,8 @@
 pub mod cookie;
 pub mod descr;
+pub mod problemfulldata;
 pub mod subm_send;
 pub mod subm_show;
-pub mod taskfulldata;
 pub mod test_send;
 
 use serde::Deserialize;

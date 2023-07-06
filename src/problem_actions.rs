@@ -2,23 +2,23 @@ use std::{error::Error, time::Duration};
 
 use serde_json::json;
 
-use crate::source::{
+use crate::resources::{
+    problemfulldata::{CodeSnippetNode, ProblemFullData, Solution, TopicTagNode, Statistics, SimilarQuestions},
     subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
     subm_show::SubmList,
-    taskfulldata::{CodeSnippetNode, Solution, TaskFullData, TopicTagNode},
     test_send::{TestCase, TestCaseResp, TestExecutionResult},
     Descryption, Rate,
 };
 
 #[derive(Debug)]
-pub struct Task {
+pub struct Problem {
     pub client: reqwest::Client,
     pub task_search_name: String,
-    pub full_data: TaskFullData,
+    pub full_data: ProblemFullData,
 }
 
 #[allow(unused)]
-impl Task {
+impl Problem {
     pub async fn send_test(
         &self,
         lang: &str,
@@ -128,11 +128,11 @@ impl Task {
         self.full_data.data.question.topicTags.clone()
     }
 
-    pub fn similar_questions(&self) -> String {
-        self.full_data.data.question.similarQuestions.clone()
+    pub fn similar_questions(&self) -> Vec<SimilarQuestions> {
+        serde_json::from_str::<Vec<SimilarQuestions>>(self.full_data.data.question.similarQuestions.as_str()).unwrap()
     }
-    pub fn stats(&self) -> String {
-        self.full_data.data.question.stats.clone()
+    pub fn stats(&self) -> Statistics {
+        serde_json::from_str::<Statistics>(self.full_data.data.question.stats.as_str()).unwrap()
     }
 
     pub fn hints(&self) -> Vec<String> {
@@ -164,7 +164,7 @@ impl Task {
         self.full_data.data.question.categoryTitle.clone()
     }
 
-    pub async fn submissions(&self) -> Result<SubmList, Box<dyn Error>> {
+    pub async fn my_submissions(&self) -> Result<SubmList, Box<dyn Error>> {
         let query = json!({
             "operationName": "Submissions",
             "variables": {

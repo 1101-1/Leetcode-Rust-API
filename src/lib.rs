@@ -1,14 +1,14 @@
 use std::error::Error;
 
+use problem_actions::Problem;
+use problem_build::{Filters, TaskBuilder};
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde_json::{json, Value};
-use source::{cookie::CookieData, descr::TaskData, taskfulldata::TaskFullData};
-use task_actions::Task;
-use task_build::{Filters, TaskBuilder};
+use resources::{cookie::CookieData, descr::ProblemData, problemfulldata::ProblemFullData};
 
-pub mod source;
-pub mod task_actions;
-pub mod task_build;
+pub mod problem_actions;
+pub mod problem_build;
+pub mod resources;
 
 pub struct UserApi {
     client: reqwest::Client,
@@ -70,76 +70,11 @@ impl UserApi {
 
         let query = r#"
         query globalData {
-            feature {
-                questionTranslation
-                subscription
-                signUp
-                discuss
-                mockInterview
-                contest
-                store
-                chinaProblemDiscuss
-                socialProviders
-                studentFooter
-                enableChannels
-                dangerZone
-                enableSharedWorker
-                enableRecaptchaV3
-                enableDebugger
-                enableDebuggerPremium
-                enableAutocomplete
-                enableAutocompletePremium
-                enableAllQuestionsRaw
-                autocompleteLanguages
-                enableIndiaPricing
-                enableReferralDiscount
-                maxTimeTravelTicketCount
-                enableStoreShippingForm
-                enableCodingChallengeV2
-                __typename
-            }
-            streakCounter {
-                streakCount
-                daysSkipped
-                currentDayCompleted
-                __typename
-            }
-            currentTimestamp
             userStatus {
                 isSignedIn
-                isAdmin
-                isStaff
-                isSuperuser
-                isMockUser
-                isTranslator
-                isPremium
-                isVerified
-                checkedInToday
-                username
-                realName
-                avatar
-                optedIn
-                requestRegion
-                region
-                activeSessionId
-                permissions
-                notificationStatus {
-                    lastModified
-                    numUnread
-                    __typename
-                }
-                completedFeatureGuides
-                __typename
             }
-            siteRegion
-            chinaHost
-            websocketUrl
-            recaptchaKey
-            recaptchaKeyV2
-            sitewideAnnouncement
-            userCountryCode
         }
-    "#;
+        "#;
 
         let json_data = json!({
             "operationName": operation_name,
@@ -161,10 +96,7 @@ impl UserApi {
             .text()
             .await
         {
-            Ok(data) => {
-                // println!("{}", data);
-                data
-            },
+            Ok(data) => data,
             Err(_err) => return Err("Can't take cookie info".into()),
         };
 
@@ -173,31 +105,30 @@ impl UserApi {
             .userStatus
             .isSignedIn
         {
-            println!("work");
             return Ok((true, String::from(token)));
         }
 
         Ok((false, String::from(token)))
     }
 
-    pub async fn set_task(&self, task: &str) -> Result<Task, Box<dyn Error>> {
-        let info = Self::get_full_data(
+    pub async fn set_problm(&self, task: &str) -> Result<Problem, Box<dyn Error>> {
+        let info = Self::fetch_full_data(
             &self,
             Self::get_question_name(&self, String::from(task)).await?,
         )
         .await?;
 
-        Ok(Task {
+        Ok(Problem {
             client: self.client.clone(),
             task_search_name: info.0,
             full_data: info.1,
         })
     }
 
-    async fn get_full_data(
+    async fn fetch_full_data(
         &self,
         task_name: String,
-    ) -> Result<(String, TaskFullData), Box<dyn Error>> {
+    ) -> Result<(String, ProblemFullData), Box<dyn Error>> {
         let json_obj = json!({
             "operationName": "questionData",
             "variables": {
@@ -215,7 +146,7 @@ impl UserApi {
             .send()
             .await
             .unwrap()
-            .json::<TaskFullData>()
+            .json::<ProblemFullData>()
             .await
         {
             Ok(data) => data,
@@ -225,11 +156,11 @@ impl UserApi {
         Ok((full_data.data.question.titleSlug.clone(), full_data))
     }
 
-    pub async fn show_tasks_list(
+    pub async fn show_problm_list(
         &self,
         key_word: &str,
         limit: u32,
-    ) -> Result<TaskData, Box<dyn Error>> {
+    ) -> Result<ProblemData, Box<dyn Error>> {
         let query = json!({
             "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { total: totalNum questions: data { acRate difficulty freqBar frontendQuestionId: questionFrontendId isFavor paidOnly: isPaidOnly status title titleSlug topicTags { name id slug } hasSolution hasVideoSolution } } }",
             "variables": {
@@ -259,10 +190,10 @@ impl UserApi {
             return Err("Problem does not found".into());
         }
 
-        Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)
+        Ok(serde_json::from_str::<ProblemData>(&task_info.unwrap())?)
     }
 
-    pub fn show_task_builder(&self) -> TaskBuilder {
+    pub fn problem_builder(&self) -> TaskBuilder {
         TaskBuilder {
             client: self.client.clone(),
             key_word: String::new(),
@@ -274,7 +205,7 @@ impl UserApi {
 
     async fn get_question_name(&self, name: String) -> Result<String, Box<dyn Error>> {
         let query = json!({
-            "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { total: totalNum questions: data { acRate difficulty freqBar frontendQuestionId: questionFrontendId isFavor paidOnly: isPaidOnly status title titleSlug topicTags { name id slug } hasSolution hasVideoSolution } } }",
+            "query": "query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) { problemsetQuestionList: questionList( categorySlug: $categorySlug limit: $limit skip: $skip filters: $filters ) { questions: data { titleSlug } } }",
             "variables": {
                 "categorySlug": "",
                 "skip": 0,
@@ -302,7 +233,7 @@ impl UserApi {
             return Err("Task does not found".into());
         }
 
-        let parsed_data: TaskData = serde_json::from_str(&task_info.unwrap())?;
+        let parsed_data: ProblemData = serde_json::from_str(&task_info.unwrap())?;
 
         Ok(parsed_data.data.problemsetQuestionList.questions[0]
             .titleSlug
@@ -310,6 +241,7 @@ impl UserApi {
     }
 }
 
+#[derive(Debug)]
 #[allow(unused)]
 pub enum Category {
     AllTopics,
@@ -320,6 +252,7 @@ pub enum Category {
     Concurrency,
 }
 
+#[derive(Debug)]
 #[allow(unused)]
 pub enum Difficulty {
     Easy,
@@ -327,6 +260,7 @@ pub enum Difficulty {
     Hard,
 }
 
+#[derive(Debug)]
 #[allow(unused)]
 pub enum Status {
     Todo,

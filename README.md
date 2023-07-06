@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcode-api = "0.1.2"
+leetcode-api = "0.1.3"
 ```
 ## Usage
 ### Authentication
@@ -30,11 +30,11 @@ async fn main() {
     let api = UserApi::new(&token).await.unwrap();
 
     // Show found problems by keyword and show 5 notes
-    let show_problems = api.show_tasks_list("sum", 5).await.unwrap();
+    let show_problems = api.show_problm_list("sum", 5).await.unwrap();
 
-    // Find problems by properties with creating builder
-    let show_problems_builder = api
-        .show_task_builder()
+    // Find problems by properties with creating problem builder
+    let problems_builder = api
+        .problem_builder()
         .set_category(leetcoderustapi::Category::Algorithms)
         .set_difficulty(leetcoderustapi::Difficulty::Easy)
         .set_keyword("sum")
@@ -51,13 +51,14 @@ async fn main() {
         .unwrap();
 
     // Fetch the full data for a specific problem
-    let problem_info = api.set_task("two sum").await.unwrap();
-
+    let problem_info = api.set_problm("two sum").await.unwrap();
+    // Retrieve previous submissions to this problem
+    let my_submissions = problem_info.my_submissions().await.unwrap();
     // Retrieve code snippets
-    let code_snippets = problem_info.code_snippets();
+    let code_snippets = problem_info.code_snippets().unwrap();
 
     // Retrieve solution info
-    let solution_info = problem_info.solution_info();
+    let solution_info = problem_info.solution_info().unwrap();
 
     // Retrieve related topics
     let related_topics = problem_info.related_topics();
