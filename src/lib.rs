@@ -1,8 +1,8 @@
 use std::error::Error;
 
 use reqwest::header::{HeaderMap, HeaderValue};
-use serde_json::json;
-use source::{descr::TaskData, taskfulldata::TaskFullData};
+use serde_json::{json, Value};
+use source::{cookie::CookieData, descr::TaskData, taskfulldata::TaskFullData};
 use task_actions::Task;
 use task_build::{Filters, TaskBuilder};
 
@@ -16,19 +16,11 @@ pub struct UserApi {
 
 #[allow(unused)]
 impl UserApi {
-    pub fn new(cookie: &str) -> Self {
+    pub async fn new(cookie: &str) -> Result<Self, Box<dyn Error>> {
         let mut headers = HeaderMap::new();
-        let token = String::from(
-            cookie
-                .strip_prefix("csrftoken=")
-                .and_then(|val| Some(&val[..64]))
-                .unwrap_or(""),
-        );
 
         headers.insert("Host", HeaderValue::from_static("leetcode.com"));
         headers.insert("User-Agent", HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"));
-        headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
-        headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
         headers.insert("Origin", HeaderValue::from_static("https://leetcode.com"));
         headers.insert("Referer", HeaderValue::from_static("https://leetcode.com/"));
         headers.insert("content-type", HeaderValue::from_static("application/json"));
@@ -37,12 +29,151 @@ impl UserApi {
         headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
         headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
 
+        let valid_data = Self::valid_check(headers.clone(), &cookie).await?;
+
+        let cookie = if valid_data.0 {
+            cookie
+        } else {
+            return Err("Cookie is invalid or User not signed".into());
+        };
+
+        let token = valid_data.1;
+
+        headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
+        headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
+
         let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
             .unwrap();
 
-        Self { client }
+        Ok(Self { client })
+    }
+
+    async fn valid_check(
+        mut headers: HeaderMap,
+        cookie: &str,
+    ) -> Result<(bool, String), Box<dyn Error>> {
+        let token = if let Some(cookie) = cookie
+            .strip_prefix("csrftoken=")
+            .and_then(|val| Some(&val[..64]))
+        {
+            cookie
+        } else {
+            return Err("cannot take token from cookie".into());
+        };
+        headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
+        headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
+
+        let operation_name = "globalData";
+        let variables: Value = json!({});
+
+        let query = r#"
+        query globalData {
+            feature {
+                questionTranslation
+                subscription
+                signUp
+                discuss
+                mockInterview
+                contest
+                store
+                chinaProblemDiscuss
+                socialProviders
+                studentFooter
+                enableChannels
+                dangerZone
+                enableSharedWorker
+                enableRecaptchaV3
+                enableDebugger
+                enableDebuggerPremium
+                enableAutocomplete
+                enableAutocompletePremium
+                enableAllQuestionsRaw
+                autocompleteLanguages
+                enableIndiaPricing
+                enableReferralDiscount
+                maxTimeTravelTicketCount
+                enableStoreShippingForm
+                enableCodingChallengeV2
+                __typename
+            }
+            streakCounter {
+                streakCount
+                daysSkipped
+                currentDayCompleted
+                __typename
+            }
+            currentTimestamp
+            userStatus {
+                isSignedIn
+                isAdmin
+                isStaff
+                isSuperuser
+                isMockUser
+                isTranslator
+                isPremium
+                isVerified
+                checkedInToday
+                username
+                realName
+                avatar
+                optedIn
+                requestRegion
+                region
+                activeSessionId
+                permissions
+                notificationStatus {
+                    lastModified
+                    numUnread
+                    __typename
+                }
+                completedFeatureGuides
+                __typename
+            }
+            siteRegion
+            chinaHost
+            websocketUrl
+            recaptchaKey
+            recaptchaKeyV2
+            sitewideAnnouncement
+            userCountryCode
+        }
+    "#;
+
+        let json_data = json!({
+            "operationName": operation_name,
+            "variables": variables,
+            "query": query,
+        });
+
+        let query = serde_json::to_string(&json_data).unwrap();
+
+        let client = reqwest::Client::new();
+
+        let cookie_info = match client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .headers(headers)
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+        {
+            Ok(data) => data,
+            Err(_err) => return Err("Can't take cookie info".into()),
+        };
+
+        if serde_json::from_str::<CookieData>(&cookie_info)?
+            .data
+            .userStatus
+            .isSignedIn
+        {
+            return Ok((true, String::from(token)));
+        }
+
+        Ok((false, String::from(token)))
     }
 
     pub async fn set_task(&self, task: &str) -> Result<Task, Box<dyn Error>> {
@@ -121,7 +252,7 @@ impl UserApi {
             .await;
 
         if let Err(_err) = task_info {
-            return Err("Task does not found".into());
+            return Err("Problem does not found".into());
         }
 
         Ok(serde_json::from_str::<TaskData>(&task_info.unwrap())?)

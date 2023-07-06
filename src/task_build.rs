@@ -61,9 +61,9 @@ impl TaskBuilder {
 
     pub fn set_status(mut self, status: Status) -> TaskBuilder {
         match status {
-            Status::Todo => self.filters.difficulty = String::from("NOT_STARTED"),
-            Status::Solved => self.filters.difficulty = String::from("AC"),
-            Status::Attempted => self.filters.difficulty = String::from("TRIED"),
+            Status::Todo => self.filters.status = String::from("NOT_STARTED"),
+            Status::Solved => self.filters.status = String::from("AC"),
+            Status::Attempted => self.filters.status = String::from("TRIED"),
         }
         self
     }
