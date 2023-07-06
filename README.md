@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcode-api = "0.1.1"
+leetcode-api = "0.1.2"
 ```
 ## Usage
 ### Authentication
@@ -41,6 +41,7 @@ async fn main() {
         //max show notes limit is 2763; default is 5
         .set_note_limit(3)
         .set_status(leetcoderustapi::Status::Solved)
+        //max tags over 50+
         .set_tags(vec![
             leetcoderustapi::Tags::Array,
             leetcoderustapi::Tags::BinarySearch,
