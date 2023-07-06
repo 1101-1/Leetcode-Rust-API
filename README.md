@@ -27,7 +27,7 @@ async fn main() {
     let token = std::env::var("COOKIE").expect("cookie doesn't set");
 
     // Create a new LeetCode client
-    let api = UserApi::new(&token);
+    let api = UserApi::new(&token).await.unwrap();
 
     // Show found problems by keyword and show 5 notes
     let show_problems = api.show_tasks_list("sum", 5).await.unwrap();
@@ -105,3 +105,4 @@ COOKIE="csrftoken=gN3mmFEKoBFHLZuiHEvZYupqirq7brDmi845GhUK8xBa9u3SUVkgTPFTPsLFuA
 
 ### License
 This library is licensed under the `MIT License`.
+
