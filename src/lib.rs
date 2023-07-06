@@ -111,7 +111,7 @@ impl UserApi {
         Ok((false, String::from(token)))
     }
 
-    pub async fn set_problm(&self, task: &str) -> Result<Problem, Box<dyn Error>> {
+    pub async fn set_problem(&self, task: &str) -> Result<Problem, Box<dyn Error>> {
         let info = Self::fetch_full_data(
             &self,
             Self::get_question_name(&self, String::from(task)).await?,
