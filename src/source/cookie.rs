@@ -35,7 +35,7 @@ pub struct Feature {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StreakCounter {
     pub streakCount: i32,
-    pub daysSkipped: i32,
+    pub daysSkipped: Option<i32>,
     pub currentDayCompleted: bool,
     pub __typename: String,
 }
@@ -57,18 +57,18 @@ pub struct UserStatus {
     pub isSuperuser: bool,
     pub isMockUser: bool,
     pub isTranslator: bool,
-    pub isPremium: bool,
+    pub isPremium: Option<bool>,
     pub isVerified: bool,
     pub checkedInToday: bool,
     pub username: String,
-    pub realName: String,
-    pub avatar: String,
+    pub realName: Option<String>,
+    pub avatar: Option<String>,
     pub optedIn: bool,
     pub requestRegion: String,
-    pub region: String,
+    pub region: Option<String>,
     pub activeSessionId: i32,
     pub permissions: Vec<String>,
-    pub notificationStatus: NotificationStatus,
+    pub notificationStatus: Option<NotificationStatus>,
     pub completedFeatureGuides: Vec<String>,
     pub __typename: String,
 }
@@ -77,7 +77,7 @@ pub struct UserStatus {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GlobalData {
     pub feature: Feature,
-    pub streakCounter: StreakCounter,
+    pub streakCounter: Option<StreakCounter>,
     pub currentTimestamp: f64,
     pub userStatus: UserStatus,
     pub siteRegion: String,

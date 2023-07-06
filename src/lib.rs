@@ -161,7 +161,10 @@ impl UserApi {
             .text()
             .await
         {
-            Ok(data) => data,
+            Ok(data) => {
+                // println!("{}", data);
+                data
+            },
             Err(_err) => return Err("Can't take cookie info".into()),
         };
 
@@ -170,6 +173,7 @@ impl UserApi {
             .userStatus
             .isSignedIn
         {
+            println!("work");
             return Ok((true, String::from(token)));
         }
 
