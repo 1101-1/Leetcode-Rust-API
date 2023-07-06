@@ -41,8 +41,7 @@ impl Problem {
             ))
             .body(json_data)
             .send()
-            .await
-            .unwrap()
+            .await?
             .json::<TestCaseResp>()
             .await
         {
@@ -58,8 +57,7 @@ impl Problem {
                     resp.interpret_id
                 ))
                 .send()
-                .await
-                .unwrap()
+                .await?
                 .json::<TestExecutionResult>()
                 .await?;
             if status.state == "SUCCESS" {
@@ -89,8 +87,7 @@ impl Problem {
             ))
             .body(json_data)
             .send()
-            .await
-            .unwrap()
+            .await?
             .json::<SubmissionCaseResp>()
             .await
         {
@@ -106,8 +103,7 @@ impl Problem {
                     resp.submission_id
                 ))
                 .send()
-                .await
-                .unwrap()
+                .await?
                 .json::<SubmExecutionResult>()
                 .await?;
             if status.state == "SUCCESS" {
@@ -176,15 +172,14 @@ impl Problem {
             "query": "query Submissions($offset: Int!, $limit: Int!, $lastKey: String, $questionSlug: String!) {\n  submissionList(offset: $offset, limit: $limit, lastKey: $lastKey, questionSlug: $questionSlug) {\n    lastKey\n    hasNext\n    submissions {\n      id\n      statusDisplay\n      lang\n      runtime\n      timestamp\n      url\n      isPending\n      memory\n      __typename\n    }\n    __typename\n  }\n}\n"
         });
 
-        let query = serde_json::to_string(&query).unwrap();
+        let query = serde_json::to_string(&query)?;
 
         match self
             .client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
-            .await
-            .unwrap()
+            .await?
             .json::<SubmList>()
             .await
         {

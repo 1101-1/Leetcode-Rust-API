@@ -226,15 +226,14 @@ impl TaskBuilder {
             "operationName": "problemsetQuestionList"
         });
 
-        let query = serde_json::to_string(&query).unwrap();
+        let query = serde_json::to_string(&query)?;
 
         let task_info = self
             .client
             .get("https://leetcode.com/graphql/")
             .body(query)
             .send()
-            .await
-            .unwrap()
+            .await?
             .text()
             .await;
 
