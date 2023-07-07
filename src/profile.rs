@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::{
     error::Errors,
-    resources::{fav_list::FavoriteList, notification::NotificationsData},
+    resources::{fav_list::FavoriteList, notification::NotificationsData, data_profile::ProfileData},
 };
 
 #[derive(Debug)]
@@ -189,6 +189,54 @@ impl MyProfile {
             .await?;
 
         Ok(serde_json::from_str::<NotificationsData>(&problem_info)?)
+    }
+
+    pub async fn profile_data(&self) -> Result<ProfileData, Errors> {
+        let query = r#"
+        query globalData {
+          userStatus {
+            userId
+            isSignedIn
+            isMockUser
+            isPremium
+            isVerified
+            username
+            avatar
+            isAdmin
+            isSuperuser
+            permissions
+            isTranslator
+            activeSessionId
+            checkedInToday
+            notificationStatus {
+              lastModified
+              numUnread
+            }
+          }
+        }
+        "#;
+
+        let variables = json!({});
+        let operation_name = "globalData";
+
+        let json_data = json!({
+            "query": query,
+            "variables": variables,
+            "operationName": operation_name
+        });
+
+        let query = serde_json::to_string(&json_data).unwrap();
+
+        let data_info = self.client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<ProfileData>(&data_info)?)
+
     }
 }
 
