@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::{error::Errors, resources::descr::ProblemData, Category, Difficulty, Status, Tags};
+use crate::{error::Errors, resources::descr::ProblemData};
 
 #[derive(Debug)]
 pub struct ProblemBuilder {
@@ -237,4 +237,106 @@ impl ProblemBuilder {
 
         Ok(serde_json::from_str::<ProblemData>(&problem_info)?)
     }
+}
+
+#[derive(Debug)]
+#[allow(unused)]
+pub enum Category {
+    AllTopics,
+    Algorithms,
+    DataBase,
+    JavaScript,
+    Shell,
+    Concurrency,
+}
+
+#[derive(Debug)]
+#[allow(unused)]
+pub enum Difficulty {
+    Easy,
+    Medium,
+    Hard,
+}
+
+#[derive(Debug)]
+#[allow(unused)]
+pub enum Status {
+    Todo,
+    Solved,
+    Attempted,
+}
+#[allow(unused)]
+#[derive(Debug)]
+pub enum Tags {
+    Array,
+    String,
+    HashTable,
+    Math,
+    DynamicProgramming,
+    Sorting,
+    Greedy,
+    DepthFirstSearch,
+    Database,
+    BinarySearch,
+    BreadthFirstSearch,
+    Tree,
+    Matrix,
+    TwoPointers,
+    BinaryTree,
+    BitManipulation,
+    HeapPriorityQueue,
+    Stack,
+    Graph,
+    PrefixSum,
+    Simulation,
+    Design,
+    Counting,
+    Backtracking,
+    SlidingWindow,
+    UnionFind,
+    LinkedList,
+    OrderedSet,
+    MonotonicStack,
+    Enumeration,
+    Recursion,
+    Trie,
+    DivideAndConquer,
+    Bitmask,
+    BinarySearchTree,
+    NumberTheory,
+    Queue,
+    SegmentTree,
+    Memoization,
+    Geometry,
+    TopologicalSort,
+    BinaryIndexedTree,
+    HashFunction,
+    GameTheory,
+    ShortestPath,
+    Combinatorics,
+    DataStream,
+    Interactive,
+    StringMatching,
+    RollingHash,
+    Brainteaser,
+    Randomized,
+    MonotonicQueue,
+    MergeSort,
+    Iterator,
+    Concurrency,
+    DoublyLinkedList,
+    ProbabilityStatistics,
+    Quickselect,
+    BucketSort,
+    SuffixArray,
+    MinimumSpanningTree,
+    CountingSort,
+    Shell,
+    LineSweep,
+    ReservoirSampling,
+    EulerianCircuit,
+    RadixSort,
+    StronglyConnectedComponent,
+    RejectionSampling,
+    BiconnectedComponent,
 }

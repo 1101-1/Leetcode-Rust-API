@@ -17,9 +17,9 @@ leetcoderustapi = "0.1.7"
 ### Authentication
 To use the LeetCode API, you need to obtain an authentication token. Follow the instructions provided by LeetCode to obtain your token.
 
-### Example: Actions with problems
+### Example: Action with problems
 ```rust
-use leetcoderustapi::UserApi;
+use leetcoderustapi::{problem_build::{Tags, Category, Difficulty, Status}, UserApi};
 
 #[tokio::main]
 async fn main() {
@@ -35,16 +35,16 @@ async fn main() {
     // Find problems by properties with creating problem builder
     let problems_builder = api
         .problem_builder()
-        .set_category(leetcoderustapi::Category::Algorithms)
-        .set_difficulty(leetcoderustapi::Difficulty::Easy)
+        .set_category(Category::Algorithms)
+        .set_difficulty(Difficulty::Easy)
         .set_keyword("sum")
         //max show notes limit is 2763; default is 5
         .set_note_limit(3)
-        .set_status(leetcoderustapi::Status::Solved)
+        .set_status(Status::Solved)
         //max tags over 50+
         .set_tags(vec![
-            leetcoderustapi::Tags::Array,
-            leetcoderustapi::Tags::BinarySearch,
+            Tags::Array,
+            Tags::BinarySearch,
         ])
         .build()
         .await
@@ -96,10 +96,15 @@ async fn main() {
         .send_test("rust", "impl Solution { fn two_sum() {}}")
         .await
         .unwrap();
+
+    // And we can check public stats of the searched profile
+    let public_user_data = api.search_public_user("1101-1").await.unwrap();
+
+
 }
 ```
 
-### Example: Actions with User profile
+### Example: Actions with Self profile
 ```rust
 #[tokio::main]
 async fn main() {
@@ -131,10 +136,10 @@ async fn main() {
     user_profile.set_private("hard_problems").await.unwrap();
 
     // Get link to the list if it is a public
-    user_profile.get_share_url("hard_problems").await.unwrap();
+    let share_list_url = user_profile.get_share_url("hard_problems").await.unwrap();
 
     // Show existing lists
-    user_profile.show_lists();
+    let lists = user_profile.show_lists();
 
     // Delete list with provided name
     user_profile
@@ -143,7 +148,7 @@ async fn main() {
         .unwrap();
 
     // Show users last 10 notification
-    user_profile.get_notifications().await.unwrap();
+    let notifications = user_profile.get_notifications().await.unwrap();
 }
 ```
 

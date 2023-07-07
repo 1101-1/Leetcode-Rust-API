@@ -1,12 +1,13 @@
 pub mod cookie;
+pub mod data_profile;
 pub mod descr;
 pub mod fav_list;
 pub mod notification;
 pub mod problemfulldata;
+pub mod pub_data_profile;
 pub mod subm_send;
 pub mod subm_show;
 pub mod test_send;
-pub mod data_profile;
 
 use serde::Deserialize;
 

@@ -1,11 +1,11 @@
 use error::Errors;
 use problem_actions::Problem;
 use problem_build::{Filters, ProblemBuilder};
-use profile::{MyProfile, UserProfile};
+use profile::MyProfile;
 use reqwest::header::{HeaderMap, HeaderValue};
 use resources::{
     cookie::CookieData, descr::ProblemData, fav_list::FavoriteList,
-    problemfulldata::ProblemFullData,
+    problemfulldata::ProblemFullData, pub_data_profile::UserFoundData,
 };
 use serde_json::{json, Value};
 
@@ -230,8 +230,27 @@ impl UserApi {
         })
     }
 
-    pub async fn find_user(&self, username: &str) -> UserProfile {
-        todo!()
+    pub async fn search_public_user(&self, profile_name: &str) -> Result<UserFoundData, Errors> {
+        let query = json!({
+            "query": "query userPublicProfile($username: String!) {\n  matchedUser(username: $username) {\n    contestBadge {\n      name\n      expired\n      hoverText\n      icon\n    }\n    username\n    githubUrl\n    twitterUrl\n    linkedinUrl\n    profile {\n      ranking\n      userAvatar\n      realName\n      aboutMe\n      school\n      websites\n      countryName\n      company\n      jobTitle\n      skillTags\n      postViewCount\n      postViewCountDiff\n      reputation\n      reputationDiff\n      solutionCount\n      solutionCountDiff\n      categoryDiscussCount\n      categoryDiscussCountDiff\n    }\n  }\n}",
+            "variables": {
+                "username": profile_name
+            },
+            "operationName": "userPublicProfile"
+        });
+
+        let query = serde_json::to_string(&query).unwrap();
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<UserFoundData>(&data_info)?)
     }
 
     async fn fetch_fav_list_data(&self) -> Result<FavoriteList, Errors> {
@@ -296,106 +315,4 @@ impl UserApi {
 
         Ok(serde_json::from_str::<FavoriteList>(&list_data)?)
     }
-}
-
-#[derive(Debug)]
-#[allow(unused)]
-pub enum Category {
-    AllTopics,
-    Algorithms,
-    DataBase,
-    JavaScript,
-    Shell,
-    Concurrency,
-}
-
-#[derive(Debug)]
-#[allow(unused)]
-pub enum Difficulty {
-    Easy,
-    Medium,
-    Hard,
-}
-
-#[derive(Debug)]
-#[allow(unused)]
-pub enum Status {
-    Todo,
-    Solved,
-    Attempted,
-}
-#[allow(unused)]
-#[derive(Debug)]
-pub enum Tags {
-    Array,
-    String,
-    HashTable,
-    Math,
-    DynamicProgramming,
-    Sorting,
-    Greedy,
-    DepthFirstSearch,
-    Database,
-    BinarySearch,
-    BreadthFirstSearch,
-    Tree,
-    Matrix,
-    TwoPointers,
-    BinaryTree,
-    BitManipulation,
-    HeapPriorityQueue,
-    Stack,
-    Graph,
-    PrefixSum,
-    Simulation,
-    Design,
-    Counting,
-    Backtracking,
-    SlidingWindow,
-    UnionFind,
-    LinkedList,
-    OrderedSet,
-    MonotonicStack,
-    Enumeration,
-    Recursion,
-    Trie,
-    DivideAndConquer,
-    Bitmask,
-    BinarySearchTree,
-    NumberTheory,
-    Queue,
-    SegmentTree,
-    Memoization,
-    Geometry,
-    TopologicalSort,
-    BinaryIndexedTree,
-    HashFunction,
-    GameTheory,
-    ShortestPath,
-    Combinatorics,
-    DataStream,
-    Interactive,
-    StringMatching,
-    RollingHash,
-    Brainteaser,
-    Randomized,
-    MonotonicQueue,
-    MergeSort,
-    Iterator,
-    Concurrency,
-    DoublyLinkedList,
-    ProbabilityStatistics,
-    Quickselect,
-    BucketSort,
-    SuffixArray,
-    MinimumSpanningTree,
-    CountingSort,
-    Shell,
-    LineSweep,
-    ReservoirSampling,
-    EulerianCircuit,
-    RadixSort,
-    StronglyConnectedComponent,
-    RejectionSampling,
-    BiconnectedComponent,
 }
