@@ -1,13 +1,18 @@
 use error::Errors;
 use problem_actions::Problem;
-use problem_build::{Filters, TaskBuilder};
+use problem_build::{Filters, ProblemBuilder};
+use profile::{MyProfile, UserProfile};
 use reqwest::header::{HeaderMap, HeaderValue};
-use resources::{cookie::CookieData, descr::ProblemData, problemfulldata::ProblemFullData};
+use resources::{
+    cookie::CookieData, descr::ProblemData, fav_list::FavoriteList,
+    problemfulldata::ProblemFullData,
+};
 use serde_json::{json, Value};
 
 pub mod error;
 pub mod problem_actions;
 pub mod problem_build;
+pub mod profile;
 pub mod resources;
 
 pub struct UserApi {
@@ -105,7 +110,7 @@ impl UserApi {
     }
 
     pub async fn set_problem(&self, task: &str) -> Result<Problem, Errors> {
-        let info = Self::fetch_full_data(
+        let info = Self::fetch_problem_full_data(
             &self,
             Self::get_question_name(&self, String::from(task)).await?,
         )
@@ -118,7 +123,7 @@ impl UserApi {
         })
     }
 
-    async fn fetch_full_data(
+    async fn fetch_problem_full_data(
         &self,
         task_name: String,
     ) -> Result<(String, ProblemFullData), Errors> {
@@ -164,20 +169,20 @@ impl UserApi {
 
         let query = serde_json::to_string(&query)?;
 
-        let task_info = self
+        let problem_info = self
             .client
-            .get("https://leetcode.com/graphql/")
+            .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await?
             .text()
             .await?;
 
-        Ok(serde_json::from_str::<ProblemData>(&task_info)?)
+        Ok(serde_json::from_str::<ProblemData>(&problem_info)?)
     }
 
-    pub fn problem_builder(&self) -> TaskBuilder {
-        TaskBuilder {
+    pub fn problem_builder(&self) -> ProblemBuilder {
+        ProblemBuilder {
             client: self.client.clone(),
             key_word: String::new(),
             limit: 5,
@@ -202,20 +207,94 @@ impl UserApi {
 
         let query = serde_json::to_string(&query)?;
 
-        let task_info = self
+        let problem_info = self
             .client
-            .get("https://leetcode.com/graphql/")
+            .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await?
             .text()
             .await?;
 
-        let parsed_data: ProblemData = serde_json::from_str(&task_info)?;
+        let parsed_data: ProblemData = serde_json::from_str(&problem_info)?;
 
         Ok(parsed_data.data.problemsetQuestionList.questions[0]
             .titleSlug
             .clone())
+    }
+
+    pub async fn my_profile(&self) -> Result<MyProfile, Errors> {
+        Ok(MyProfile {
+            client: self.client.clone(),
+            fav_lists: Self::fetch_fav_list_data(&self).await?,
+        })
+    }
+
+    pub async fn find_user(&self, username: &str) -> UserProfile {
+        todo!()
+    }
+
+    async fn fetch_fav_list_data(&self) -> Result<FavoriteList, Errors> {
+        let query = json!({
+            "operationName": "favoritesList",
+            "variables": {},
+            "query": "query favoritesList {
+                favoritesLists {
+                    allFavorites {
+                        idHash
+                        name
+                        description
+                        viewCount
+                        creator
+                        isWatched
+                        isPublicFavorite
+                        questions {
+                            questionId
+                            status
+                            title
+                            titleSlug
+                            __typename
+                        }
+                        __typename
+                    }
+                    watchedFavorites {
+                        idHash
+                        name
+                        description
+                        viewCount
+                        creator
+                        isWatched
+                        isPublicFavorite
+                        questions {
+                            questionId
+                            status
+                            title
+                            titleSlug
+                            __typename
+                        }
+                        __typename
+                    }
+                    __typename
+                }
+                userStatus {
+                    username
+                    __typename
+                }
+            }"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let list_data = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<FavoriteList>(&list_data)?)
     }
 }
 

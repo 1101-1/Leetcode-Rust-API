@@ -1,5 +1,6 @@
 pub mod cookie;
 pub mod descr;
+pub mod fav_list;
 pub mod problemfulldata;
 pub mod subm_send;
 pub mod subm_show;

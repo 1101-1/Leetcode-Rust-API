@@ -2,15 +2,18 @@ use std::time::Duration;
 
 use serde_json::json;
 
-use crate::{resources::{
-    problemfulldata::{
-        CodeSnippetNode, ProblemFullData, SimilarQuestions, Solution, Statistics, TopicTagNode,
+use crate::{
+    error::Errors,
+    resources::{
+        problemfulldata::{
+            CodeSnippetNode, ProblemFullData, SimilarQuestions, Solution, Statistics, TopicTagNode,
+        },
+        subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
+        subm_show::SubmList,
+        test_send::{TestCase, TestCaseResp, TestExecutionResult},
+        Descryption, Rate,
     },
-    subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
-    subm_show::SubmList,
-    test_send::{TestCase, TestCaseResp, TestExecutionResult},
-    Descryption, Rate,
-}, error::Errors};
+};
 
 #[derive(Debug)]
 pub struct Problem {
@@ -64,17 +67,12 @@ impl Problem {
         }
     }
 
-    pub async fn send_subm(
-        &self,
-        lang: &str,
-        code: &str,
-    ) -> Result<SubmExecutionResult, Errors> {
+    pub async fn send_subm(&self, lang: &str, code: &str) -> Result<SubmExecutionResult, Errors> {
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
             lang: lang.to_lowercase(),
             typed_code: String::from(code),
-        })
-        .unwrap();
+        })?;
 
         let resp = self
             .client
@@ -117,39 +115,40 @@ impl Problem {
         self.full_data.data.question.topicTags.clone()
     }
 
-    pub fn similar_questions(&self) -> Vec<SimilarQuestions> {
-        serde_json::from_str::<Vec<SimilarQuestions>>(
+    pub fn similar_questions(&self) -> Result<Vec<SimilarQuestions>, Errors> {
+        Ok(serde_json::from_str::<Vec<SimilarQuestions>>(
             self.full_data.data.question.similarQuestions.as_str(),
-        )
-        .unwrap()
+        )?)
     }
-    pub fn stats(&self) -> Statistics {
-        serde_json::from_str::<Statistics>(self.full_data.data.question.stats.as_str()).unwrap()
+    pub fn stats(&self) -> Result<Statistics, Errors> {
+        Ok(serde_json::from_str::<Statistics>(
+            self.full_data.data.question.stats.as_str(),
+        )?)
     }
 
     pub fn hints(&self) -> Vec<String> {
         self.full_data.data.question.hints.clone()
     }
 
-    pub fn description(&self) -> Descryption {
+    pub fn description(&self) -> Result<Descryption, Errors> {
         let descryption = json!({
             "name": self.full_data.data.question.title,
             "content": self.full_data.data.question.content
         });
-        serde_json::from_value::<Descryption>(descryption).unwrap()
+        Ok(serde_json::from_value::<Descryption>(descryption)?)
     }
 
     pub fn difficulty(&self) -> String {
         self.full_data.data.question.difficulty.clone()
     }
 
-    pub fn rating(&self) -> Rate {
+    pub fn rating(&self) -> Result<Rate, Errors> {
         let rate = json!({
             "likes": self.full_data.data.question.likes,
             "dislikes": self.full_data.data.question.dislikes
         });
 
-        serde_json::from_value::<Rate>(rate).unwrap()
+        Ok(serde_json::from_value::<Rate>(rate)?)
     }
 
     pub fn category(&self) -> String {
@@ -161,7 +160,7 @@ impl Problem {
             "operationName": "Submissions",
             "variables": {
                 "offset": 0,
-                "limit": 20,
+                "limit": 10,
                 "lastKey": null,
                 "questionSlug": self.task_search_name
             },

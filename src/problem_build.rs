@@ -4,7 +4,7 @@ use serde_json::json;
 use crate::{error::Errors, resources::descr::ProblemData, Category, Difficulty, Status, Tags};
 
 #[derive(Debug)]
-pub struct TaskBuilder {
+pub struct ProblemBuilder {
     pub client: reqwest::Client,
     pub key_word: String,
     pub limit: u32,
@@ -35,8 +35,8 @@ impl Default for Filters {
 }
 
 #[allow(unused)]
-impl TaskBuilder {
-    pub fn set_category(mut self, categoty: Category) -> TaskBuilder {
+impl ProblemBuilder {
+    pub fn set_category(mut self, categoty: Category) -> ProblemBuilder {
         match categoty {
             Category::AllTopics => self.category = String::from(""),
             Category::Algorithms => self.category = String::from("algorithms"),
@@ -48,7 +48,7 @@ impl TaskBuilder {
         self
     }
 
-    pub fn set_difficulty(mut self, difficulty: Difficulty) -> TaskBuilder {
+    pub fn set_difficulty(mut self, difficulty: Difficulty) -> ProblemBuilder {
         match difficulty {
             Difficulty::Easy => self.filters.difficulty = String::from("EASY"),
             Difficulty::Medium => self.filters.difficulty = String::from("MEDIUM"),
@@ -57,7 +57,7 @@ impl TaskBuilder {
         self
     }
 
-    pub fn set_status(mut self, status: Status) -> TaskBuilder {
+    pub fn set_status(mut self, status: Status) -> ProblemBuilder {
         match status {
             Status::Todo => self.filters.status = String::from("NOT_STARTED"),
             Status::Solved => self.filters.status = String::from("AC"),
@@ -66,17 +66,17 @@ impl TaskBuilder {
         self
     }
 
-    pub fn set_note_limit(mut self, limit: u32) -> TaskBuilder {
+    pub fn set_note_limit(mut self, limit: u32) -> ProblemBuilder {
         self.limit = limit;
         self
     }
 
-    pub fn set_keyword(mut self, keyword: &str) -> TaskBuilder {
+    pub fn set_keyword(mut self, keyword: &str) -> ProblemBuilder {
         self.key_word = String::from(keyword);
         self
     }
 
-    pub fn set_tags(mut self, tags: Vec<Tags>) -> TaskBuilder {
+    pub fn set_tags(mut self, tags: Vec<Tags>) -> ProblemBuilder {
         let mut res_tags = Vec::new();
 
         for tag in tags {
@@ -226,7 +226,7 @@ impl TaskBuilder {
 
         let query = serde_json::to_string(&query)?;
 
-        let task_info = self
+        let problem_info = self
             .client
             .get("https://leetcode.com/graphql/")
             .body(query)
@@ -235,6 +235,6 @@ impl TaskBuilder {
             .text()
             .await?;
 
-        Ok(serde_json::from_str::<ProblemData>(&task_info)?)
+        Ok(serde_json::from_str::<ProblemData>(&problem_info)?)
     }
 }
