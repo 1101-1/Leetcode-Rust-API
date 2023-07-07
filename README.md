@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcoderustapi = "0.1.7"
+leetcoderustapi = "1.0.0"
 ```
 ## Usage
 ### Authentication
@@ -96,11 +96,6 @@ async fn main() {
         .send_test("rust", "impl Solution { fn two_sum() {}}")
         .await
         .unwrap();
-
-    // And we can check public stats of the searched profile
-    let public_user_data = api.search_public_user("1101-1").await.unwrap();
-
-
 }
 ```
 
@@ -151,7 +146,52 @@ async fn main() {
     let notifications = user_profile.get_notifications().await.unwrap();
 }
 ```
+### Example: Actions with Public user profile
+```rust
+#[tokio::main]
+async fn main() {
+    // Set cookie from leetcode
+    let token = std::env::var("COOKIE").expect("cookie doesn't set");
 
+    // Create a new LeetCode client
+    let api = UserApi::new(&token).await.unwrap();
+
+    // Find public user
+    let user = api
+        .find_profile("1101-1")
+        .await;
+
+    // Check public user common stats
+    let user_stats = user
+        .recent_subm_list()
+        .await
+        .unwrap();
+
+    // Check what langs used user
+    let lang_stats = user
+        .language_stats()
+        .await
+        .unwrap();
+    
+    // Check what problems (by tags) solve user
+    let skill_stats = user
+        .skill_stats()
+        .await
+        .unwrap();
+
+    // Show rating by beating problems
+    let beat_stats = ser
+        .problem_beat_stats()
+        .await
+        .unwrap();
+
+     // Show recent submissons of user
+    let beat_stats = ser
+        .recent_subm_list()
+        .await
+        .unwrap();
+}
+```
 
 
 #### Important

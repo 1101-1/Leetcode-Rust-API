@@ -3,7 +3,9 @@ use serde_json::json;
 use crate::{
     error::Errors,
     resources::{
-        data_profile::ProfileData, fav_list::FavoriteList, notification::NotificationsData,
+        beat_stats::BeatStats, data_profile::ProfileData, fav_list::FavoriteList,
+        lang_stats::LanguageStats, notification::NotificationsData,
+        pub_data_profile::UserFoundData, skill_stats::SkillStats, subm_list::RecentSubmList,
     },
 };
 
@@ -227,7 +229,7 @@ impl MyProfile {
             "operationName": operation_name
         });
 
-        let query = serde_json::to_string(&json_data).unwrap();
+        let query = serde_json::to_string(&json_data)?;
 
         let data_info = self
             .client
@@ -239,5 +241,151 @@ impl MyProfile {
             .await?;
 
         Ok(serde_json::from_str::<ProfileData>(&data_info)?)
+    }
+}
+
+#[derive(Debug)]
+pub struct UserProfile {
+    pub(crate) client: reqwest::Client,
+    pub(crate) username: String,
+}
+
+impl UserProfile {
+    pub async fn user_stats(&self) -> Result<UserFoundData, Errors> {
+        let query = json!({
+            "query": "query userPublicProfile($username: String!) {\n  matchedUser(username: $username) {\n    contestBadge {\n      name\n      expired\n      hoverText\n      icon\n    }\n    username\n    githubUrl\n    twitterUrl\n    linkedinUrl\n    profile {\n      ranking\n      userAvatar\n      realName\n      aboutMe\n      school\n      websites\n      countryName\n      company\n      jobTitle\n      skillTags\n      postViewCount\n      postViewCountDiff\n      reputation\n      reputationDiff\n      solutionCount\n      solutionCountDiff\n      categoryDiscussCount\n      categoryDiscussCountDiff\n    }\n  }\n}",
+            "variables": {
+                "username": self.username
+            },
+            "operationName": "userPublicProfile"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<UserFoundData>(&data_info)?)
+    }
+
+    pub async fn language_stats(&self) -> Result<LanguageStats, Errors> {
+        let query = json!({
+            "query": "query languageStats($username: String!) {\n  matchedUser(username: $username) {\n    languageProblemCount {\n      languageName\n      problemsSolved\n    }\n  }\n}",
+            "variables": {
+                "username": self.username
+            },
+            "operationName": "languageStats"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<LanguageStats>(&data_info)?)
+    }
+
+    pub async fn skill_stats(&self) -> Result<SkillStats, Errors> {
+        let query = json!({
+            "query": r#"
+                query skillStats($username: String!) {
+                  matchedUser(username: $username) {
+                    tagProblemCounts {
+                      advanced {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                      }
+                      intermediate {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                      }
+                      fundamental {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                      }
+                    }
+                  }
+                }
+            "#,
+            "variables": {
+                "username": "1101-1"
+            },
+            "operationName": "skillStats"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<SkillStats>(&data_info)?)
+    }
+
+    pub async fn problem_beat_stats(&self) -> Result<BeatStats, Errors> {
+        let query = json!({
+            "query": "query userProblemsSolved($username: String!) {\n  matchedUser(username: $username) {\n    problemsSolvedBeatsStats {\n      difficulty\n      percentage\n    }\n    submitStatsGlobal {\n      acSubmissionNum {\n        difficulty\n        count\n      }\n    }\n  }\n}",
+            "variables": {
+                "username": self.username
+            },
+            "operationName": "userProblemsSolved"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<BeatStats>(&data_info)?)
+    }
+
+    pub async fn recent_subm_list(&self) -> Result<RecentSubmList, Errors> {
+        let query = json!({
+            "query": "query recentAcSubmissions($username: String!, $limit: Int!) {\n  recentAcSubmissionList(username: $username, limit: $limit) {\n    id\n    title\n    titleSlug\n    timestamp\n  }\n}",
+            "variables": {
+                "username": self.username,
+                "limit": 15
+            },
+            "operationName": "recentAcSubmissions"
+        });
+
+        let query = serde_json::to_string(&query)?;
+
+        let data_info = self
+            .client
+            .post("https://leetcode.com/graphql/")
+            .body(query)
+            .send()
+            .await?
+            .text()
+            .await?;
+
+        Ok(serde_json::from_str::<RecentSubmList>(&data_info)?)
     }
 }
