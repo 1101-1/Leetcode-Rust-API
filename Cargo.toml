@@ -1,6 +1,6 @@
 [package]
 name = "leetcoderustapi"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Kirill Melkozerov <k.melkozerov@gmail.com>"]
 edition = "2021"
 license = "MIT"

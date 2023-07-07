@@ -12,7 +12,7 @@ pub struct MyProfile {
 }
 
 impl MyProfile {
-    pub async fn create_fav_list(&self, list_name: &str) -> Result<&MyProfile, Errors> {
+    pub async fn create_list(&self, list_name: &str) -> Result<&MyProfile, Errors> {
         let query = json!({ "name": list_name });
 
         let query = serde_json::to_string(&query)?;
@@ -28,7 +28,7 @@ impl MyProfile {
         self.fav_lists.clone()
     }
 
-    pub async fn rename_fav_list(
+    pub async fn rename_list(
         &self,
         prev_list_name: &str,
         new_list_name: &str,
