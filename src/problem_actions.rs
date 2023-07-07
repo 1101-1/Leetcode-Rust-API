@@ -1,8 +1,8 @@
-use std::{error::Error, time::Duration};
+use std::time::Duration;
 
 use serde_json::json;
 
-use crate::resources::{
+use crate::{resources::{
     problemfulldata::{
         CodeSnippetNode, ProblemFullData, SimilarQuestions, Solution, Statistics, TopicTagNode,
     },
@@ -10,7 +10,7 @@ use crate::resources::{
     subm_show::SubmList,
     test_send::{TestCase, TestCaseResp, TestExecutionResult},
     Descryption, Rate,
-};
+}, error::Errors};
 
 #[derive(Debug)]
 pub struct Problem {
@@ -25,17 +25,16 @@ impl Problem {
         &self,
         lang: &str,
         typed_code: &str,
-    ) -> Result<TestExecutionResult, Box<dyn Error>> {
+    ) -> Result<TestExecutionResult, Errors> {
         let json_data = serde_json::to_string(&TestCase {
             question_id: self.full_data.data.question.questionId.clone(),
             data_input: self.full_data.data.question.sampleTestCase.clone(),
             lang: lang.to_lowercase(),
             judge_type: String::from("large"),
             typed_code: String::from(typed_code),
-        })
-        .unwrap();
+        })?;
 
-        let resp = match self
+        let resp = self
             .client
             .post(format!(
                 "https://leetcode.com/problems/{}/interpret_solution/",
@@ -45,11 +44,7 @@ impl Problem {
             .send()
             .await?
             .json::<TestCaseResp>()
-            .await
-        {
-            Ok(data) => data,
-            Err(_err) => return Err("Your token is invalid or access to the Task is deny".into()),
-        };
+            .await?;
 
         loop {
             let status = self
@@ -73,7 +68,7 @@ impl Problem {
         &self,
         lang: &str,
         code: &str,
-    ) -> Result<SubmExecutionResult, Box<dyn Error>> {
+    ) -> Result<SubmExecutionResult, Errors> {
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
             lang: lang.to_lowercase(),
@@ -81,7 +76,7 @@ impl Problem {
         })
         .unwrap();
 
-        let resp = match self
+        let resp = self
             .client
             .post(format!(
                 "https://leetcode.com/problems/{}/submit/",
@@ -91,11 +86,7 @@ impl Problem {
             .send()
             .await?
             .json::<SubmissionCaseResp>()
-            .await
-        {
-            Ok(data) => data,
-            Err(_err) => return Err("Your token is invalid or access to the task is deny".into()),
-        };
+            .await?;
 
         loop {
             let status = self
@@ -152,7 +143,7 @@ impl Problem {
         self.full_data.data.question.difficulty.clone()
     }
 
-    pub fn likes(&self) -> Rate {
+    pub fn rating(&self) -> Rate {
         let rate = json!({
             "likes": self.full_data.data.question.likes,
             "dislikes": self.full_data.data.question.dislikes
@@ -165,7 +156,7 @@ impl Problem {
         self.full_data.data.question.categoryTitle.clone()
     }
 
-    pub async fn my_submissions(&self) -> Result<SubmList, Box<dyn Error>> {
+    pub async fn my_submissions(&self) -> Result<SubmList, Errors> {
         let query = json!({
             "operationName": "Submissions",
             "variables": {
@@ -179,17 +170,13 @@ impl Problem {
 
         let query = serde_json::to_string(&query)?;
 
-        match self
+        Ok(self
             .client
             .post("https://leetcode.com/graphql/")
             .body(query)
             .send()
             .await?
             .json::<SubmList>()
-            .await
-        {
-            Ok(data) => Ok(data),
-            Err(_err) => Err("Can't take descryption from task".into()),
-        }
+            .await?)
     }
 }

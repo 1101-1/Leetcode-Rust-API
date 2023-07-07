@@ -52,11 +52,11 @@ impl UserApi {
     }
 
     async fn valid_check(mut headers: HeaderMap, cookie: &str) -> Result<(bool, String), Errors> {
-        let token = if let Some(cookie) = cookie
+        let token = if let Some(token) = cookie
             .strip_prefix("csrftoken=")
             .and_then(|val| Some(&val[..64]))
         {
-            cookie
+            token
         } else {
             return Err(Errors::ApiError("Cannot take token from cookie".into()));
         };

@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcoderustapi = "0.1.5"
+leetcoderustapi = "0.1.6"
 ```
 ## Usage
 ### Authentication
@@ -78,8 +78,8 @@ async fn main() {
     // Retrieve difficulty
     let difficulty = problem_info.difficulty();
 
-    // Retrieve likes
-    let likes = problem_info.likes();
+    // Retrieve likes and dislikes
+    let likes = problem_info.rating();
 
     // Retrieve category
     let category = problem_info.category();
