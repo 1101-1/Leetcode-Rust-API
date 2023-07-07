@@ -17,7 +17,7 @@ leetcoderustapi = "0.1.6"
 ### Authentication
 To use the LeetCode API, you need to obtain an authentication token. Follow the instructions provided by LeetCode to obtain your token.
 
-### Example
+### Example: Actions with problems
 ```rust
 use leetcoderustapi::UserApi;
 
@@ -52,8 +52,10 @@ async fn main() {
 
     // Fetch the full data for a specific problem
     let problem_info = api.set_problem("two sum").await.unwrap();
+
     // Retrieve previous submissions to this problem
     let my_submissions = problem_info.my_submissions().await.unwrap();
+
     // Retrieve code snippets
     let code_snippets = problem_info.code_snippets().unwrap();
 
@@ -64,22 +66,22 @@ async fn main() {
     let related_topics = problem_info.related_topics();
 
     // Retrieve similar questions
-    let similar_questions = problem_info.similar_questions();
+    let similar_questions = problem_info.similar_questions().unwrap();
 
     // Retrieve stats
-    let stats = problem_info.stats();
+    let stats = problem_info.stats().unwrap();
 
     // Retrieve hints
     let hints = problem_info.hints();
 
     // Retrieve description
-    let description = problem_info.description();
+    let description = problem_info.description().unwrap();
 
     // Retrieve difficulty
     let difficulty = problem_info.difficulty();
 
     // Retrieve likes and dislikes
-    let likes = problem_info.rating();
+    let likes = problem_info.rating().unwrap();
 
     // Retrieve category
     let category = problem_info.category();
@@ -96,9 +98,55 @@ async fn main() {
         .unwrap();
 }
 ```
-### That is what is it looks like:
 
-![work](https://github.com/1101-1/LeetcodeRustAPI/assets/70093559/70806622-526f-4307-b3b6-c25335ed4421)
+### Example: Actions with User profile
+```rust
+#[tokio::main]
+async fn main() {
+    // Set cookie from leetcode
+    let token = std::env::var("COOKIE").expect("cookie doesn't set");
+
+    // Create a new LeetCode client
+    let api = UserApi::new(&token).await.unwrap();
+
+    // Create interaction with profile
+    let user_profile = api.my_profile().await.unwrap();
+
+    // Create empty list of the problems with provided name
+    user_profile
+        .create_fav_list("my_new_favorite_list")
+        .await
+        .unwrap();
+
+    // Rename lists
+    user_profile
+        .rename_fav_list("my_new_favorite_list", "hard_problems")
+        .await
+        .unwrap();
+
+    // Set list puplic
+    user_profile.set_public("hard_problems").await.unwrap();
+
+    // Set list private
+    user_profile.set_private("hard_problems").await.unwrap();
+
+    // Get link to the list if it is public
+    user_profile.get_share_url("hard_problems").await.unwrap();
+
+    // Show existing lists
+    user_profile.show_lists();
+
+    // Delete list with provided name
+    user_profile
+        .delete_list("hard_problems")
+        .await
+        .unwrap();
+
+    // Show users last 10 notification
+    user_profile.get_notifications().await.unwrap();
+}
+```
+
 
 
 #### Important

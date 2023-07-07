@@ -5,21 +5,21 @@ use crate::{error::Errors, resources::descr::ProblemData, Category, Difficulty, 
 
 #[derive(Debug)]
 pub struct ProblemBuilder {
-    pub client: reqwest::Client,
-    pub key_word: String,
-    pub limit: u32,
-    pub category: String,
-    pub filters: Filters,
+    pub(crate) client: reqwest::Client,
+    pub(crate) key_word: String,
+    pub(crate) limit: u32,
+    pub(crate) category: String,
+    pub(crate) filters: Filters,
 }
 
 #[allow(non_snake_case)]
 #[derive(Debug, Deserialize)]
 pub struct Filters {
-    difficulty: String,
-    orderBy: String,
-    sortOrder: String,
-    status: String,
-    tags: Vec<String>,
+    pub difficulty: String,
+    pub orderBy: String,
+    pub sortOrder: String,
+    pub status: String,
+    pub tags: Vec<String>,
 }
 
 impl Default for Filters {

@@ -17,8 +17,8 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Problem {
-    pub client: reqwest::Client,
-    pub task_search_name: String,
+    pub(crate) client: reqwest::Client,
+    pub(crate) task_search_name: String,
     pub full_data: ProblemFullData,
 }
 
