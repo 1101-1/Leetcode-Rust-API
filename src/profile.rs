@@ -323,7 +323,7 @@ impl UserProfile {
                 }
             "#,
             "variables": {
-                "username": "1101-1"
+                "username": self.username
             },
             "operationName": "skillStats"
         });
