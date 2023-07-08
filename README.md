@@ -19,7 +19,7 @@ To use the LeetCode API, you need to obtain an authentication token. Follow the 
 
 ### Example: Action with problems
 ```rust
-use leetcoderustapi::{problem_build::{Tags, Category, Difficulty, Status}, UserApi};
+use leetcoderustapi::{problem_build::{Tags, Category, Difficulty, Status}, UserApi, ProgrammingLanguage,};
 
 #[tokio::main]
 async fn main() {
@@ -89,11 +89,11 @@ async fn main() {
     // We also can send submissions and tests
     // Need to specify a lang and provided code
     let subm_response = problem_info
-        .send_subm("rust", "impl Solution { fn two_sum() {}}")
+        .send_subm(ProgrammingLanguage::Rust, "impl Solution { fn two_sum() {}}")
         .await
         .unwrap();
     let test_response = problem_info
-        .send_test("rust", "impl Solution { fn two_sum() {}}")
+        .send_test(ProgrammingLanguage::Rust, "impl Solution { fn two_sum() {}}")
         .await
         .unwrap();
 }

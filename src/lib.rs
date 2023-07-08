@@ -300,3 +300,29 @@ impl UserApi {
         Ok(serde_json::from_str::<FavoriteList>(&list_data)?)
     }
 }
+
+#[derive(Debug)]
+pub enum ProgrammingLanguage {
+    CPP,
+    Java,
+    Python,
+    Python3,
+    C,
+    CSharp,
+    JavaScript,
+    TypeScript,
+    Ruby,
+    Swift,
+    Go,
+    Bash,
+    Scala,
+    Kotlin,
+    Rust,
+    PHP,
+    Racket,
+    Erlang,
+    Elixir,
+    Dart,
+    Pandas,
+    React,
+}

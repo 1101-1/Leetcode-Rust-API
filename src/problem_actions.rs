@@ -12,7 +12,7 @@ use crate::{
         subm_show::SubmList,
         test_send::{TestCase, TestCaseResp, TestExecutionResult},
         Descryption, Rate,
-    },
+    }, ProgrammingLanguage,
 };
 
 #[derive(Debug)]
@@ -26,13 +26,14 @@ pub struct Problem {
 impl Problem {
     pub async fn send_test(
         &self,
-        lang: &str,
+        lang: ProgrammingLanguage,
         typed_code: &str,
     ) -> Result<TestExecutionResult, Errors> {
+        let lang = Self::lang_converter(lang);
         let json_data = serde_json::to_string(&TestCase {
             question_id: self.full_data.data.question.questionId.clone(),
             data_input: self.full_data.data.question.sampleTestCase.clone(),
-            lang: lang.to_lowercase(),
+            lang: lang.to_owned(),
             judge_type: String::from("large"),
             typed_code: String::from(typed_code),
         })?;
@@ -67,10 +68,11 @@ impl Problem {
         }
     }
 
-    pub async fn send_subm(&self, lang: &str, code: &str) -> Result<SubmExecutionResult, Errors> {
+    pub async fn send_subm(&self, lang: ProgrammingLanguage, code: &str) -> Result<SubmExecutionResult, Errors> {
+        let lang = Self::lang_converter(lang);
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
-            lang: lang.to_lowercase(),
+            lang: lang.to_owned(),
             typed_code: String::from(code),
         })?;
 
@@ -101,6 +103,33 @@ impl Problem {
                 return Ok(status);
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    }
+
+    fn lang_converter(lang: ProgrammingLanguage) -> &'static str {
+        match lang {
+            ProgrammingLanguage::CPP => "cpp",
+            ProgrammingLanguage::Java => "java",
+            ProgrammingLanguage::Python => "python",
+            ProgrammingLanguage::Python3 => "python3",
+            ProgrammingLanguage::C => "c",
+            ProgrammingLanguage::CSharp => "csharp",
+            ProgrammingLanguage::JavaScript => "javascript",
+            ProgrammingLanguage::TypeScript => "typescript",
+            ProgrammingLanguage::Ruby => "ruby",
+            ProgrammingLanguage::Swift => "swift",
+            ProgrammingLanguage::Go => "go",
+            ProgrammingLanguage::Bash => "bash",
+            ProgrammingLanguage::Scala => "scala",
+            ProgrammingLanguage::Kotlin => "kotlin",
+            ProgrammingLanguage::Rust => "rust",
+            ProgrammingLanguage::PHP => "php",
+            ProgrammingLanguage::Racket => "racket",
+            ProgrammingLanguage::Erlang => "erlang",
+            ProgrammingLanguage::Elixir => "elixir",
+            ProgrammingLanguage::Dart => "dart",
+            ProgrammingLanguage::Pandas => "pandas",
+            ProgrammingLanguage::React => "react",
         }
     }
     pub fn code_snippets(&self) -> Option<Vec<CodeSnippetNode>> {
