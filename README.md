@@ -162,8 +162,8 @@ async fn main() {
         .await;
 
     // Check public user common stats
-    let user_stats = user
-        .recent_subm_list()
+    let user_stats = user.
+        user_stats()
         .await
         .unwrap();
 
