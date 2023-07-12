@@ -11,7 +11,7 @@ This Rust library provides a convenient way to interact with the LeetCode API, a
 Add the following line to your `Cargo.toml` file:
 ```toml
 [dependencies]
-leetcoderustapi = "1.0.4"
+leetcoderustapi = "1.0.5"
 ```
 ## Usage
 ### Authentication
@@ -114,13 +114,13 @@ async fn main() {
 
     // Create empty list of the problems with provided name
     user_profile
-        .create_fav_list("my_new_favorite_list")
+        .create_list("my_new_favorite_list")
         .await
         .unwrap();
 
     // Rename list
     user_profile
-        .rename_fav_list("my_new_favorite_list", "hard_problems")
+        .rename_list("my_new_favorite_list", "hard_problems")
         .await
         .unwrap();
 
