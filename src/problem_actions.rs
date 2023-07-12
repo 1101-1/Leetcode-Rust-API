@@ -134,7 +134,6 @@ impl Problem {
             ProgrammingLanguage::Dart => "dart",
             ProgrammingLanguage::Pandas => "pandas",
             ProgrammingLanguage::React => "react",
-            ProgrammingLanguage::ADas => "safa"
         }
     }
     pub fn code_snippets(&self) -> Option<Vec<CodeSnippetNode>> {

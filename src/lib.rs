@@ -325,5 +325,4 @@ pub enum ProgrammingLanguage {
     Dart,
     Pandas,
     React,
-    ADas,
 }

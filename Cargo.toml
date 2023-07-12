@@ -1,13 +1,13 @@
 [package]
 name = "leetcoderustapi"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["Kirill Melkozerov <k.melkozerov@gmail.com>"]
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/1101-1/LeetcodeRustAPI"
 
 description = """
-A full-features Rust API for Leetcode.
+A full-featured Rust API for Leetcode.
 """
 
 readme = "README.md"
