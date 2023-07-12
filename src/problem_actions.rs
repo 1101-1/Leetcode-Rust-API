@@ -63,6 +63,8 @@ impl Problem {
                 .await?;
             if status.state == "SUCCESS" {
                 return Ok(status);
+            } else if status.state == "FAILURE" {
+                return Err(Errors::SendError("Sent code failure. Err may be occured by Unsupported lang for this problem".into()));
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
@@ -101,6 +103,8 @@ impl Problem {
                 .await?;
             if status.state == "SUCCESS" {
                 return Ok(status);
+            } else if status.state == "FAILURE" {
+                return Err(Errors::SendError("Sent code failure. Err may be occured by Unsupported lang for this problem".into()));
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
@@ -130,6 +134,7 @@ impl Problem {
             ProgrammingLanguage::Dart => "dart",
             ProgrammingLanguage::Pandas => "pandas",
             ProgrammingLanguage::React => "react",
+            ProgrammingLanguage::ADas => "safa"
         }
     }
     pub fn code_snippets(&self) -> Option<Vec<CodeSnippetNode>> {

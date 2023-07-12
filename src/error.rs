@@ -8,6 +8,8 @@ pub enum Errors {
     FetchProblemError(#[from] reqwest::Error),
     #[error("ApiError(`{0}`)")]
     ApiError(String),
+    #[error("Sendrror(`{0}`)")]
+    SendError(String)
 }
 
 impl std::convert::From<Errors> for io::Error {
