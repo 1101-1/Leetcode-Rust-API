@@ -9,7 +9,7 @@ pub enum Errors {
     #[error("ApiError(`{0}`)")]
     ApiError(String),
     #[error("Sendrror(`{0}`)")]
-    SendError(String)
+    SendError(String),
 }
 
 impl std::convert::From<Errors> for io::Error {

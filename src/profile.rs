@@ -37,7 +37,7 @@ impl MyProfile {
         prev_list_name: &str,
         new_list_name: &str,
     ) -> Result<&MyProfile, Errors> {
-        let id_hash = if let Some(id) = Self::get_id_hash(&self, prev_list_name).await {
+        let id_hash = if let Some(id) = Self::get_id_hash(&self, prev_list_name) {
             id
         } else {
             return Err(Errors::ApiError("Provided name doesn't found".into()));
@@ -59,7 +59,7 @@ impl MyProfile {
     }
 
     pub async fn set_public(&self, list_name: &str) -> Result<&MyProfile, Errors> {
-        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name).await {
+        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name) {
             id
         } else {
             return Err(Errors::ApiError(
@@ -83,7 +83,7 @@ impl MyProfile {
     }
 
     pub async fn set_private(&self, list_name: &str) -> Result<&MyProfile, Errors> {
-        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name).await {
+        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name) {
             id
         } else {
             return Err(Errors::ApiError(
@@ -107,7 +107,7 @@ impl MyProfile {
     }
 
     pub async fn get_share_url(&self, list_name: &str) -> Result<String, Errors> {
-        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name).await {
+        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name) {
             id
         } else {
             return Err(Errors::ApiError(
@@ -119,7 +119,7 @@ impl MyProfile {
     }
 
     pub async fn delete_list(&self, list_name: &str) -> Result<&MyProfile, Errors> {
-        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name).await {
+        let id_hash = if let Some(id) = Self::get_id_hash(&self, list_name) {
             id
         } else {
             return Err(Errors::ApiError(
@@ -135,7 +135,7 @@ impl MyProfile {
         Ok(self)
     }
 
-    async fn get_id_hash(&self, list_name: &str) -> Option<(String, bool)> {
+    fn get_id_hash(&self, list_name: &str) -> Option<(String, bool)> {
         for favourite in &self.fav_lists.data.favoritesLists.allFavorites {
             if favourite.name == list_name.to_string() {
                 return Some((favourite.idHash.clone(), favourite.isPublicFavorite.clone()));

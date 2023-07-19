@@ -230,7 +230,7 @@ impl UserApi {
         })
     }
 
-    pub async fn find_profile(&self, username: &str) -> UserProfile {
+    pub fn find_profile(&self, username: &str) -> UserProfile {
         UserProfile {
             client: self.client.clone(),
             username: String::from(username),

@@ -12,7 +12,8 @@ use crate::{
         subm_show::SubmList,
         test_send::{TestCase, TestCaseResp, TestExecutionResult},
         Descryption, Rate,
-    }, ProgrammingLanguage,
+    },
+    ProgrammingLanguage,
 };
 
 #[derive(Debug)]
@@ -64,13 +65,20 @@ impl Problem {
             if status.state == "SUCCESS" {
                 return Ok(status);
             } else if status.state == "FAILURE" {
-                return Err(Errors::SendError("Sent code failure. Err may be occured by Unsupported lang for this problem".into()));
+                return Err(Errors::SendError(
+                    "Sent code failure. Err may be occured by Unsupported lang for this problem"
+                        .into(),
+                ));
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
     }
 
-    pub async fn send_subm(&self, lang: ProgrammingLanguage, code: &str) -> Result<SubmExecutionResult, Errors> {
+    pub async fn send_subm(
+        &self,
+        lang: ProgrammingLanguage,
+        code: &str,
+    ) -> Result<SubmExecutionResult, Errors> {
         let lang = Self::lang_converter(lang);
         let json_data = serde_json::to_string(&SubmissionCase {
             question_id: self.full_data.data.question.questionId.clone(),
@@ -104,7 +112,10 @@ impl Problem {
             if status.state == "SUCCESS" {
                 return Ok(status);
             } else if status.state == "FAILURE" {
-                return Err(Errors::SendError("Sent code failure. Err may be occured by Unsupported lang for this problem".into()));
+                return Err(Errors::SendError(
+                    "Sent code failure. Err may be occured by Unsupported lang for this problem"
+                        .into(),
+                ));
             }
             tokio::time::sleep(Duration::from_secs(1)).await;
         }
