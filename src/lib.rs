@@ -19,7 +19,6 @@ pub struct UserApi {
     client: reqwest::Client,
 }
 
-#[allow(unused)]
 impl UserApi {
     pub async fn new(cookie: &str) -> Result<Self, Errors> {
         let mut headers = HeaderMap::new();

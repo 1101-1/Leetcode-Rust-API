@@ -15,16 +15,14 @@ pub mod test_send;
 
 use serde::Deserialize;
 
-#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct Rate {
     pub likes: u32,
     pub dislikes: u32,
 }
 
-#[allow(unused)]
 #[derive(Deserialize, Debug)]
-pub struct Descryption {
+pub struct Description {
     pub name: String,
     pub content: String,
 }

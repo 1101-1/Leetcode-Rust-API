@@ -34,7 +34,6 @@ impl Default for Filters {
     }
 }
 
-#[allow(unused)]
 impl ProblemBuilder {
     pub fn set_category(mut self, categoty: Category) -> ProblemBuilder {
         match categoty {
@@ -240,7 +239,6 @@ impl ProblemBuilder {
 }
 
 #[derive(Debug)]
-#[allow(unused)]
 pub enum Category {
     AllTopics,
     Algorithms,
@@ -251,7 +249,6 @@ pub enum Category {
 }
 
 #[derive(Debug)]
-#[allow(unused)]
 pub enum Difficulty {
     Easy,
     Medium,
@@ -259,13 +256,12 @@ pub enum Difficulty {
 }
 
 #[derive(Debug)]
-#[allow(unused)]
 pub enum Status {
     Todo,
     Solved,
     Attempted,
 }
-#[allow(unused)]
+
 #[derive(Debug)]
 pub enum Tags {
     Array,

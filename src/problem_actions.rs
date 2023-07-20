@@ -11,7 +11,7 @@ use crate::{
         subm_send::{SubmExecutionResult, SubmissionCase, SubmissionCaseResp},
         subm_show::SubmList,
         test_send::{TestCase, TestCaseResp, TestExecutionResult},
-        Descryption, Rate,
+        Description, Rate,
     },
     ProgrammingLanguage,
 };
@@ -23,7 +23,6 @@ pub struct Problem {
     pub full_data: ProblemFullData,
 }
 
-#[allow(unused)]
 impl Problem {
     pub async fn send_test(
         &self,
@@ -174,12 +173,12 @@ impl Problem {
         self.full_data.data.question.hints.clone()
     }
 
-    pub fn description(&self) -> Result<Descryption, Errors> {
+    pub fn description(&self) -> Result<Description, Errors> {
         let descryption = json!({
             "name": self.full_data.data.question.title,
             "content": self.full_data.data.question.content
         });
-        Ok(serde_json::from_value::<Descryption>(descryption)?)
+        Ok(serde_json::from_value::<Description>(descryption)?)
     }
 
     pub fn difficulty(&self) -> String {

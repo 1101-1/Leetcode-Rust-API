@@ -9,14 +9,12 @@ pub struct TestCase {
     pub judge_type: String,
 }
 
-#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct TestCaseResp {
     pub interpret_id: String,
     pub test_case: String,
 }
 
-#[allow(unused)]
 #[derive(Deserialize, Debug)]
 pub struct TestExecutionResult {
     pub status_code: Option<u32>,
