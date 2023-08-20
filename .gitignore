@@ -2,3 +2,4 @@
 .env
 Cargo.lock
 src/main.rs
+.devcontainer

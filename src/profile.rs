@@ -388,4 +388,14 @@ impl UserProfile {
 
         Ok(serde_json::from_str::<RecentSubmList>(&data_info)?)
     }
+
+    pub async fn deactivate_token(&self) -> Result<(), Errors> {
+        self.client
+            .post("https://leetcode.com/accounts/logout/")
+            .send()
+            .await?
+            .text()
+            .await?;
+        Ok(())
+    }
 }

@@ -144,6 +144,9 @@ async fn main() {
 
     // Show users last 10 notification
     let notifications = user_profile.get_notifications().await.unwrap();
+
+    // Deactivate token(logout)
+    user_profile.deactivate_token().await.unwrap();
 }
 ```
 ### Example: Actions with Public user profile
@@ -205,4 +208,3 @@ COOKIE="csrftoken=gN3mmFEKoBFHLZuiHEvZYupqirq7brDmi845GhUK8xBa9u3SUVkgTPFTPsLFuA
 
 ### License
 This library is licensed under the `MIT License`.
-

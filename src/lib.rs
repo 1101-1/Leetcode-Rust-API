@@ -7,7 +7,7 @@ use resources::{
     cookie::CookieData, descr::ProblemData, fav_list::FavoriteList,
     problemfulldata::ProblemFullData,
 };
-use serde_json::{json, Value};
+use serde_json::json;
 
 pub mod error;
 pub mod problem_actions;
@@ -15,6 +15,7 @@ pub mod problem_build;
 pub mod profile;
 pub mod resources;
 
+#[derive(Debug)]
 pub struct UserApi {
     client: reqwest::Client,
 }
@@ -55,6 +56,106 @@ impl UserApi {
         Ok(Self { client })
     }
 
+    // Soon will be added if i find way to overcome captcha
+
+    // pub async fn new_with_login(username: &str, password: &str) -> Result<Self, Errors> {
+    //     let mut headers = HeaderMap::new();
+
+    //     headers.insert("Host", HeaderValue::from_static("leetcode.com"));
+    //     headers.insert("User-Agent", HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"));
+    //     headers.insert("Origin", HeaderValue::from_static("https://leetcode.com"));
+    //     headers.insert("Referer", HeaderValue::from_static("https://leetcode.com/"));
+    //     headers.insert("Connection", HeaderValue::from_static("keep-alive"));
+    //     headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
+    //     headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
+    //     headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
+
+    //     let cookie = Self::get_csrf(username, password, headers.clone()).await?;
+        
+    //     let valid_data = Self::valid_check(headers.clone(), &cookie).await?;
+
+    //     let cookie = if valid_data.0 {
+    //         cookie
+    //     } else {
+    //         return Err(error::Errors::ApiError(
+    //             "Err to login into account".into(),
+    //         ));
+    //     };
+
+    //     let token = valid_data.1;
+
+    //     headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
+    //     headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
+
+    //     headers.insert("content-type", HeaderValue::from_static("application/json"));
+
+    //     let client = reqwest::Client::builder()
+    //         .default_headers(headers)
+    //         .build()?;
+
+    //     Ok(Self { client })
+    // }
+    
+    // Soon will be added if i find way to overcome captcha
+
+    // async fn get_csrf(
+    //     username: &str,
+    //     password: &str,
+    //     mut headers: HeaderMap,
+    // ) -> Result<String, Errors> {
+    //     let client = reqwest::Client::new();
+
+    //     let cookie = client
+    //         .get("https://leetcode.com/")
+    //         .send()
+    //         .await?
+    //         .headers()
+    //         .get("set-cookie")
+    //         .unwrap()
+    //         .to_str()
+    //         .unwrap()
+    //         .to_owned();
+
+    //     let token = Self::valid_check(headers.clone(), &cookie).await?.1;
+
+    //     let boundary = format!(
+    //         "---------------------------{}",
+    //         uuid::Uuid::new_v4().simple()
+    //     );
+
+    //     headers.insert(
+    //         "content-type",
+    //         HeaderValue::from_str(&format!("multipart/form-data; boundary=-----------------------------117813464726863521931465700267")).unwrap(),
+    //     );
+
+    //     headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
+    //     headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
+
+    //     let form_data = vec![
+    //         ("csrfmiddlewaretoken", token),
+    //         ("login", username.into()),
+    //         ("password", password.into()),
+    //         ("next", "/".into()),
+    //     ];
+
+    //     let mut multipart = Form::new();
+    //     for (key, value) in form_data.iter() {
+    //         let part = Part::text(value.to_string()).file_name(key.to_string());
+    //         multipart = multipart.part(key.to_string(), part);
+    //     }
+
+    //     let x = client
+    //         .post("https://leetcode.com/accounts/login/")
+    //         .headers(headers)
+    //         .multipart(multipart)
+    //         .send()
+    //         .await.unwrap().text().await.unwrap();
+
+    //     println!("{:?}", x);
+
+    //     Ok(x)
+    // }
+
     async fn valid_check(mut headers: HeaderMap, cookie: &str) -> Result<(bool, String), Errors> {
         let token = if let Some(token) = cookie
             .strip_prefix("csrftoken=")
@@ -64,24 +165,15 @@ impl UserApi {
         } else {
             return Err(Errors::ApiError("Cannot take token from cookie".into()));
         };
+
         headers.insert("Cookie", HeaderValue::from_str(&cookie).unwrap());
         headers.insert("x-csrftoken", HeaderValue::from_str(&token).unwrap());
-
-        let operation_name = "globalData";
-        let variables: Value = json!({});
-
-        let query = r#"
-        query globalData {
-            userStatus {
-                isSignedIn
-            }
-        }
-        "#;
+        headers.insert("content-type", HeaderValue::from_static("application/json"));
 
         let json_data = json!({
-            "operationName": operation_name,
-            "variables": variables,
-            "query": query,
+            "operationName": "globalData",
+            "variables": {},
+            "query": "query globalData {\n  userStatus {\n    isSignedIn\n    isAdmin\n    isStaff\n    isSuperuser\n    isMockUser\n    isTranslator\n    isPremium\n    isVerified\n    checkedInToday\n    username\n    realName\n    avatar\n    optedIn\n    requestRegion\n    region\n    activeSessionId\n    permissions\n    notificationStatus {\n      lastModified\n      numUnread\n      __typename\n    }\n    completedFeatureGuides\n    __typename\n  }\n  recaptchaKey\n}"
         });
 
         let query = serde_json::to_string(&json_data)?;
@@ -91,17 +183,23 @@ impl UserApi {
         let cookie_info = client
             .post("https://leetcode.com/graphql/")
             .body(query)
-            .headers(headers)
+            .headers(headers.clone())
             .send()
             .await?
             .text()
             .await?;
 
-        if serde_json::from_str::<CookieData>(&cookie_info)?
+        let resp_info = serde_json::from_str::<CookieData>(&cookie_info)?;
+        
+        // Soon will be added if i find way to overcome captcha
+
+        // let captcha_key = client.post(format!("https://www.recaptcha.net/recaptcha/enterprise/reload?k={}", resp_info.data.recaptchaKey)).headers(headers);
+
+        if resp_info
             .data
             .userStatus
             .isSignedIn
-        {
+        {   
             return Ok((true, String::from(token)));
         }
 
