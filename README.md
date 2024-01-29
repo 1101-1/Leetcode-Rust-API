@@ -50,8 +50,11 @@ async fn main() {
         .await
         .unwrap();
 
-    // Fetch the full data for a specific problem
+    // Fetch the full data for a specific problem by it's name
     let problem_info = api.set_problem("two sum").await.unwrap();
+
+    // Fetch the full data for a specific problem by it's ID(same as name)
+    let problem_info = api.set_problem("1").await.unwrap();
 
     // Retrieve previous submissions to this problem
     let my_submissions = problem_info.my_submissions().await.unwrap();
