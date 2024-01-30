@@ -71,7 +71,7 @@ impl UserApi {
     //     headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
 
     //     let cookie = Self::get_csrf(username, password, headers.clone()).await?;
-        
+
     //     let valid_data = Self::valid_check(headers.clone(), &cookie).await?;
 
     //     let cookie = if valid_data.0 {
@@ -95,7 +95,7 @@ impl UserApi {
 
     //     Ok(Self { client })
     // }
-    
+
     // Soon will be added if i find way to overcome captcha
 
     // async fn get_csrf(
@@ -190,26 +190,39 @@ impl UserApi {
             .await?;
 
         let resp_info = serde_json::from_str::<CookieData>(&cookie_info)?;
-        
+
         // Soon will be added if i find way to overcome captcha
 
         // let captcha_key = client.post(format!("https://www.recaptcha.net/recaptcha/enterprise/reload?k={}", resp_info.data.recaptchaKey)).headers(headers);
 
-        if resp_info
-            .data
-            .userStatus
-            .isSignedIn
-        {   
+        if resp_info.data.userStatus.isSignedIn {
             return Ok((true, String::from(token)));
         }
 
         Ok((false, String::from(token)))
     }
 
-    pub async fn set_problem(&self, task: &str) -> Result<Problem, Errors> {
+    pub async fn set_problem(&self, problem_name: &str) -> Result<Problem, Errors> {
         let info = Self::fetch_problem_full_data(
             &self,
-            Self::get_question_name(&self, String::from(task)).await?,
+            Self::get_question_name(&self, String::from(problem_name)).await?,
+        )
+        .await?;
+
+        Ok(Problem {
+            client: self.client.clone(),
+            task_search_name: info.0,
+            full_data: info.1,
+        })
+    }
+
+    pub async fn set_problem_by_id(
+        &self,
+        problem_id: u32,
+    ) -> Result<Problem, Errors> {
+        let info = Self::fetch_problem_full_data(
+            &self,
+            Self::get_question_name(&self, problem_id.to_string()).await?,
         )
         .await?;
 
@@ -222,12 +235,12 @@ impl UserApi {
 
     async fn fetch_problem_full_data(
         &self,
-        task_name: String,
+        problem: String,
     ) -> Result<(String, ProblemFullData), Errors> {
         let json_obj = json!({
             "operationName": "questionData",
             "variables": {
-                "titleSlug": task_name
+                "titleSlug": problem
             },
             "query": "query questionData($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    boundTopicId\n    title\n    titleSlug\n    content\n    translatedTitle\n    translatedContent\n    isPaidOnly\n    canSeeQuestion\n    difficulty\n    likes\n    dislikes\n    isLiked\n    similarQuestions\n    exampleTestcases\n    categoryTitle\n    contributors {\n      username\n      profileUrl\n      avatarUrl\n      __typename\n    }\n    topicTags {\n      name\n      slug\n      translatedName\n      __typename\n    }\n    companyTagStats\n    codeSnippets {\n      lang\n      langSlug\n      code\n      __typename\n    }\n    stats\n    hints\n    solution {\n      id\n      canSeeDetail\n      paidOnly\n      hasVideoSolution\n      paidOnlyVideo\n      __typename\n    }\n    status\n    sampleTestCase\n    metaData\n    judgerAvailable\n    judgeType\n    mysqlSchemas\n    enableRunCode\n    enableTestMode\n    enableDebugger\n    envInfo\n    libraryUrl\n    adminUrl\n    challengeQuestion {\n      id\n      date\n      incompleteChallengeCount\n      streakCount\n      type\n      __typename\n    }\n    __typename\n  }\n}"
         });
