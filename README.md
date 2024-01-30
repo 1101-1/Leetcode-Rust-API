@@ -186,13 +186,13 @@ async fn main() {
         .unwrap();
 
     // Show rating by beating problems
-    let beat_stats = ser
+    let beat_stats = user
         .problem_beat_stats()
         .await
         .unwrap();
 
      // Show recent submissons of user
-    let beat_stats = ser
+    let beat_stats = user
         .recent_subm_list()
         .await
         .unwrap();
