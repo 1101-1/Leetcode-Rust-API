@@ -192,7 +192,7 @@ async fn main() {
         .unwrap();
 
      // Show recent submissons of user
-    let beat_stats = user
+    let recent_submission_list = user
         .recent_subm_list()
         .await
         .unwrap();
